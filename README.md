@@ -30,15 +30,22 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h2 id="jxjjzm-java">Java系列</h2>
 <h3 id="design-pattern">Design Pattern</h3>
-//TOOD:
+*注释写在这里*
+
+* [设计模式之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F.md)
+
+
 <h3 id="java8">Java8</h3>
-//TOOD:
+*注释写在这里*
+
+* [Java8新特性之流（Stream）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Java8/Java8%E6%96%B0%E7%89%B9%E6%80%A7%E4%B9%8B%E6%B5%81%EF%BC%88Stream%EF%BC%89.md)
+
 
 <h2 id="jxjjzm-dubbo">Dubbo系列</h2>
 <h3 id="jxjjzm-dubbo-code">Dubbo源码篇</h3>
 *这里分享了Dubbo部分源码笔记心得，希望对你有所帮助*
 
-* [Dubbo核心机制分析之Bean加载](https://www.baidu.com/)：
+* [Dubbo核心机制分析之Bean加载](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)：
 * [Dubbo核心机制分析之Extension](https://www.baidu.com/)：
 * [Dubbo核心机制分析之Invoker](https://www.baidu.com/)：
 * [Dubbo核心机制分析之Exchange](https://www.baidu.com/) ：
@@ -54,13 +61,14 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 <h3 id="jxjjzm-dubbo-inAction">Dubbo实战篇</h3>
 *来这里记录下你的足迹吧*
 
-* [Dubbo入门](https://www.baidu.com/)：
+* [Dubbo快速入门](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E5%AE%9E%E6%88%98%E7%AF%87/Dubbo%E5%85%A5%E9%97%A8.md)：
 * [Dubbo高级配置](https://www.baidu.com/)：
 * [Dubbo问题集锦](https://www.baidu.com/)：
 
 <h2 id="jxjjzm-redis">Redis系列</h2>
 *来这里记录下你的足迹吧！*
 
+* [Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)：
 
 
 
