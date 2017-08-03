@@ -21,7 +21,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 		- [Dubbo核心机制分析之Filter](#jxjjzm-dubbo-code-filter)
 		- [Dubbo核心机制分析之Listener](#jxjjzm-dubbo-code-listener)
 		- [Dubbo核心机制分析之Proxy](#jxjjzm-dubbo-code-proxy)
-		- [Dubbo核心机制分析之RPC](#jxjjzm-dubbo-code-rpc)
+		- [Dubbo核心机制分析之Rpc](#jxjjzm-dubbo-code-rpc)
 		- [Dubbo过程分析之Export](#jxjjzm-dubbo-code-export)
 		- [Dubbo过程分析之Refer](#jxjjzm-dubbo-code-refer)
 		- [Dubbo过程分析之Registry](#jxjjzm-dubbo-code-registry)
