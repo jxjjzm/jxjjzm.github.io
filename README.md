@@ -61,7 +61,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 * [Dubbo问题集锦](https://www.baidu.com/)：
 
 <h2 id="jxjjzm-redis">Redis系列</h2>
-*来这里记录下你的足迹吧*
+*来这里记录下你的足迹吧！！！*
 
 
 
