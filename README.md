@@ -46,12 +46,10 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 * [Dubbo核心机制分析之Listener](https://www.baidu.com/)：
 * [Dubbo核心机制分析之Proxy](https://www.baidu.com/)：
 * [Dubbo核心机制分析之RPC](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Extension](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Invoker](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Exchange](https://www.baidu.com/) ：
-* [Dubbo核心机制分析之Filter](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Listener](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Proxy](https://www.baidu.com/)：
+* [Dubbo过程分析之Export](https://www.baidu.com/)：
+* [Dubbo过程分析之Refer](https://www.baidu.com/)：
+* [Dubbo过程分析之Registry](https://www.baidu.com/) ：
+
 
 <h3 id="jxjjzm-dubbo-inAction">Dubbo实战篇</h3>
 *来这里记录下你的足迹吧*
