@@ -24,12 +24,4 @@
 在dubbo-config-spring 源码工程 src/main/resources/META_INF 目录下有两个配置文件spring.handlers 和 spring.schemas ：
 我们来看一下dubbo是如何按照spring提供的机制来处理配置文件的：
  
-
-
-
-
-
-
-
-
-
+![](http://i.imgur.com/tdx5ZqH.png)
