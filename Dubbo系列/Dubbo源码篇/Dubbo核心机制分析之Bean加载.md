@@ -1,6 +1,31 @@
-##Dubbo核心机制分析之Bean加载
-//TODO:概述
+##Dubbo核心机制分析之服务的启动与初始化
+*如果你对Dubbo基础知识不甚了解,建议先TODO*
 ***
+###一、Dubbo启动
+
+![Dubbo启动](http://images2015.cnblogs.com/blog/120296/201603/120296-20160325170344386-827572634.png)
+
+####1.Dubbo启动脚本
+
+![启动脚本start.sh](http://i.imgur.com/MTnIhDh.png)
+
+*从Dubbo启动脚本中不难发现，容器启动入口在com.alibaba.dubbo.container.Main类：*
+
+![Dubbo启动入口类](http://i.imgur.com/UUnCVrb.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ###一、Spring可扩展Schema
 *在很多情况下，我们需要为系统提供可配置化支持，简单的做法可以直接基于Spring的标准Bean来配置，但配置较为复杂或者需要更多丰富控制的时候，会显得非常笨拙。
 一般的做法会用原生态的方式去解析定义好的xml文件，然后转化为配置对象，这种方式当然可以解决所有问题，但实现起来比较繁琐，特别是是在配置非常复杂的时候，
@@ -24,4 +49,4 @@
 在dubbo-config-spring 源码工程 src/main/resources/META_INF 目录下有两个配置文件spring.handlers 和 spring.schemas ：
 我们来看一下dubbo是如何按照spring提供的机制来处理配置文件的：
  
-![](http://i.imgur.com/tdx5ZqH.png)
+![Spring Schema File](http://i.imgur.com/tdx5ZqH.png)
