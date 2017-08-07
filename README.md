@@ -10,24 +10,94 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 # Java-Techblog
 ### 目录
 - [Java系列](#jxjjzm-java)
-	- [Design Pattern](#design-pattern)
-	- [Java8](#java8)
+	- [专题之Java集合](#jxjjzm-java-collect)
+	- [专题之Design Pattern](#jxjjzm-java-design-pattern)
+	- [专题之Java8](#jxjjzm-java-java8)
+	- [专题之Java并发](#jxjjzm-java-juc)
+	- [专题之Jvm](#jxjjzm-java-jvm)
+- [开发工具系列](#jxjjzm-tool)
+	- [GIT](#jxjjzm-tool-git)
+	- [SVN](#jxjjzm-tool-svn)
+	- [Jenkins](#jxjjzm-tool-jenkins)
+	- [Maven](#jxjjzm-tool-maven)
+	- [gradle](#jxjjzm-tool-gradle)
+	- [Ant](#jxjjzm-tool-ant)
+	- [Sonarqube](#jxjjzm-tool-sonarqube)
+- [Linux系列](#jxjjzm-linux)
 - [Dubbo系列](#jxjjzm-dubbo)
 	- [Dubbo源码篇](#jxjjzm-dubbo-code)
 	- [Dubbo实战篇](#jxjjzm-dubbo-inAction)
-- [Redis系列](#jxjjzm-redis)
+- [Spring系列](#jxjjzm-spring)
+	- [Spring+Spring MVC](#jxjjzm-spring-mvc)
+	- [Spring Boot](#jxjjzm-spring-boot)
+	- [Spring Cloud](#jxjjzm-spring-cloud)
+	- [Spring Data](#jxjjzm-spring-data)
+	- [Spring Batch](#jxjjzm-spring-batch)
+	- [Spring Security](#jxjjzm-spring-security)
+- [分布式系列](#jxjjzm-distributed-system) 
+	- [分布式理论基础](#jxjjzm-distributed-system-theory)
+	- [Keepalive+Nginx](#jxjjzm-distributed-system-nginx)
+	- [Zookeeper](#jxjjzm-distributed-system-zookeeper)
+	- [Redis](#jxjjzm-distributed-system-redis)
+	- [Memcached](#jxjjzm-distributed-system-memcached)
+	- [Disconf](#jxjjzm-distributed-system-disconf)
+	- [分布式全链路追踪](#jxjjzm-distributed-system-full-link)
+	- [分布式网关](#jxjjzm-distributed-system-web-api)
+	- [Docker](#jxjjzm-distributed-system-docker)
+	- [ELK](#jxjjzm-distributed-system-elk)
+	- [Elastic-Job](#jxjjzm-distributed-system-job)
+- [MQ系列](#jxjjzm-mq)
+	- [activitymq](#jxjjzm-mq-activitymq)
+	- [rabbitmq](#jxjjzm-mq-rabbitmq)
+	- [rocketmq](#jxjjzm-mq-rocketmq)
+	- [zeromq](#jxjjzm-mq-zeromq)
+- [Database系列](#jxjjzm-db)
+	- [Mysql](#jxjjzm-db-mysql)
+	- [Oracle](#jxjjzm-db-oracle)
+	- [DB2](#jxjjzm-db-db2)
+	- [Corba](#jxjjzm-db-corba)
+	- [Mycat](#jxjjzm-db-mycat)
+
 
 <h2 id="jxjjzm-java">Java系列</h2>
-<h3 id="design-pattern">Design Pattern</h3>
+<h3 id="jxjjzm-java-collect">专题之Java集合</h3>
+*注释写在这里*
+<h3 id="jxjjzm-java-design-pattern">专题之Design Pattern</h3>
 *注释写在这里*
 
 * [设计模式之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88Bean%E5%8A%A0%E8%BD%BD%EF%BC%89.md)
 
-
-<h3 id="java8">Java8</h3>
+<h3 id="jxjjzm-java-java8">专题之Java8</h3>
 *注释写在这里*
 
 * [Java8新特性之流（Stream）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Java8/Java8%E6%96%B0%E7%89%B9%E6%80%A7%E4%B9%8B%E6%B5%81%EF%BC%88Stream%EF%BC%89.md)
+
+<h3 id="jxjjzm-java-juc">专题之Java并发</h3>
+*注释写在这里*
+<h3 id="jxjjzm-java-jvm">专题之JVM</h3>
+*注释写在这里*
+
+
+
+<h2 id="jxjjzm-tool">开发工具系列</h2>
+<h3 id="jxjjzm-tool-git">Git</h3>
+*备注*
+<h3 id="jxjjzm-tool-svn">Svn</h3>
+*备注*
+<h3 id="jxjjzm-tool-jenkins">Jenkins</h3>
+*备注*
+<h3 id="jxjjzm-tool-maven">Maven</h3>
+*备注*
+<h3 id="jxjjzm-tool-gradle">Gradle</h3>
+*备注*
+<h3 id="jxjjzm-tool-ant">Ant</h3>
+*备注*
+<h3 id="jxjjzm-tool-sonarqube">Sonarqube</h3>
+*备注*
+
+
+<h2 id="jxjjzm-linux">Linux系列</h2>
+*备注*
 
 
 <h2 id="jxjjzm-dubbo">Dubbo系列</h2>
@@ -48,16 +118,83 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 
 <h3 id="jxjjzm-dubbo-inAction">Dubbo实战篇</h3>
-*来这里记录下你的足迹吧*
+*备注*
 
 * [Dubbo快速入门](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E5%AE%9E%E6%88%98%E7%AF%87/Dubbo%E5%85%A5%E9%97%A8.md)：
 * [Dubbo高级配置](https://www.baidu.com/)：
 * [Dubbo问题集锦](https://www.baidu.com/)：
 
-<h2 id="jxjjzm-redis">Redis系列</h2>
-*来这里记录下你的足迹吧！*
+
+<h2 id="jxjjzm-spring">Spring系列</h2>
+<h3 id="jxjjzm-spring-mvc">Spring+Spring MVC</h3>
+*备注*
+<h3 id="jxjjzm-spring-boot">Spring Boot</h3>
+*备注*
+<h3 id="jxjjzm-spring-mvc">Spring Cloud</h3>
+*备注*
+<h3 id="jxjjzm-spring-mvc">Spring Data</h3>
+*备注*
+<h3 id="jxjjzm-spring-mvc">Spring Batch</h3>
+*备注*
+<h3 id="jxjjzm-spring-mvc">Spring Security</h3>
+*备注*
+
+
+
+<h2 id="jxjjzm-distributed-system">分布式系列</h2>
+<h3 id="jxjjzm-distributed-system-theory">分布式理论基础</h3>
+*备注*
+<h3 id="Keepalive+Nginx">Keepalive+Nginx</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-zookeeper">Zookeeper</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-redis">Redis</h3>
+*备注*
 
 * [Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)：
+<h3 id="jxjjzm-distributed-system-memcached">Memcached</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-disconf">Disconf</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-full-link">分布式全链路追踪</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-web-api">分布式网关</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-docker">Docker</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-elk">ELK</h3>
+*备注*
+<h3 id="jxjjzm-distributed-system-job">Elastic-Job</h3>
+*备注*
+
+
+
+
+
+<h2 id="jxjjzm-mq">MQ系列</h2>
+<h3 id="jxjjzm-mq-activitymq">activitymq</h3>
+*备注*
+<h3 id="jxjjzm-mq-rabbitmq">rabbitmq</h3>
+*备注*
+<h3 id="jxjjzm-mq-rocketmq">rocketmq</h3>
+*备注*
+<h3 id="jxjjzm-mq-zeromq">zeromq</h3>
+*备注*
+
+
+
+
+<h2 id="jxjjzm-mq">Database系列</h2>
+<h3 id="jxjjzm-db-mysql">Mysql</h3>
+*备注*
+<h3 id="jxjjzm-db-oracle">Oracle</h3>
+*备注*
+<h3 id="jxjjzm-db-db2">DB2</h3>
+*备注*
+<h3 id="jxjjzm-db-corba">Corba</h3>
+*备注*
+<h3 id="jxjjzm-db-mycat">Mycat</h3>
+*备注*
 
 
 
