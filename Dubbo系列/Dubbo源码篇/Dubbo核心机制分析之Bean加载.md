@@ -49,30 +49,134 @@
 ####2、 Dubbo Bean初始化（加载）
 
 
-*先来看一下dubbo-config-spring 的源码目录结构：*
-
 ![Dubbo源码结构示意图](http://i.imgur.com/RfPHvgV.png) 
  
+#####（1）xml ------> BeanDefinition
 *由于大部分项目都会使用Spring，Dubbo也提供了通过Spring来进行配置——Dubbo加载Spring的集成是在dubbo-config下面的dubbo-config-spring子模块（通过Spring可扩展Schema实现）。
 在该模块的META-INF文件夹下有两个文件：spring.handlers和spring.schemas*
  
 ![Spring Schema File](http://i.imgur.com/tdx5ZqH.png)
 
 *其中，spring.schemas指定了Dubbo namespace的XSD文件的位置，spring.handlers指定了Dubbo的namespace由DubboNamespaceHandler来处理解析。*
+    
+ 
+    public class DubboNamespaceHandler extends NamespaceHandlerSupport {
+    	static {
+    		Version.checkDuplicate(DubboNamespaceHandler.class);
+    	}
+    	public void init() {
+    		//配置<dubbo:application>标签解析器
+    		registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
+    		//配置<dubbo:module>标签解析器
+    		registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
+    		//配置<dubbo:registry>标签解析器
+    		registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
+    		//配置<dubbo:monitor>标签解析器
+    		registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
+    		//配置<dubbo:provider>标签解析器
+    		registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class, true));
+    		//配置<dubbo:consumer>标签解析器
+    		registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
+    		//配置<dubbo:protocol>标签解析器
+    		registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
+    		//配置<dubbo:service>标签解析器
+    		registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
+    		//配置<dubbo:refenrence>标签解析器
+    		registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
+    		//配置<dubbo:annotation>标签解析器
+    		registerBeanDefinitionParser("annotation", new DubboBeanDefinitionParser(AnnotationBean.class, true));
+    	}
+    }
+    
 
-![DubboNameSpaceHandle](http://i.imgur.com/H1wi6wG.png)
+
 
 *从这里也可以看到，Dubbo对应支持的标签其实不多，所有的Parser都封装到了DubboBeanDefinitionParser中。下面看看DubboBeanDefinitionParser里面做了什么事情:*
 
 
+    public class DubboBeanDefinitionParser implements BeanDefinitionParser {
+    	private static final Logger logger = LoggerFactory.getLogger(DubboBeanDefinitionParser.class);
+    
+    	private final Class<?> beanClass;
+    
+    	private final boolean required;
+    
+    	public DubboBeanDefinitionParser(Class<?> beanClass, boolean required) {
+    		this.beanClass = beanClass;
+    		this.required = required;
+    	}
+    
+    	public BeanDefinition parse(Element element, ParserContext parserContext) {
+    		return parse(element, parserContext, beanClass, required);
+    	}
+    
+    	@SuppressWarnings("unchecked")
+    	private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+    		//初始化BeanDefiniion
+    		RootBeanDefinition beanDefinition = new RootBeanDefinition();
+    		beanDefinition.setBeanClass(beanClass);
+    		beanDefinition.setLazyInit(false);
+    		String id = element.getAttribute("id");
+    		if ((id == null || id.length() == 0) && required) {
+    			String generatedBeanName = element.getAttribute("name");
+    			if (generatedBeanName == null || generatedBeanName.length() == 0) {
+    				//如果当前解析的类型是ProtocolConfig，则设置默认id为dubbo
+    				if (ProtocolConfig.class.equals(beanClass)) {   
+    					generatedBeanName = "dubbo";
+    				} else {
+     					//其他情况，默认id为接口类型
+    					generatedBeanName = element.getAttribute("interface");  
+    				}
+    			}
+    			if (generatedBeanName == null || generatedBeanName.length() == 0) {
+    				//如果该节点没有interface属性（包含：registry,monitor,provider,consumer），则使用该节点的类型为id值
+    				generatedBeanName = beanClass.getName();   
+    			}
+    			id = generatedBeanName;
+    			int counter = 2;
+    			while(parserContext.getRegistry().containsBeanDefinition(id)) { 
+    				//生成不重复的id
+    				id = generatedBeanName + (counter ++);
+    			}
+    		}
+    	if (id != null && id.length() > 0) {//目前这个判断不知道啥意义，目测必定会返回true
+    		if (parserContext.getRegistry().containsBeanDefinition(id))  {
+     			//这个判断应该用于防止并发
+    			throw new IllegalStateException("Duplicate spring bean id " + id);
+    		}
+    		//注册beanDefinition，BeanDefinitionRegistry相当于一张注册表
+    		parserContext.getRegistry().registerBeanDefinition(id, beanDefinition);
+    		beanDefinition.getPropertyValues().addPropertyValue("id", id);
+    	}
+    	//下面这几个if-else分别针对不同类型做特殊处理
+    	if (ProtocolConfig.class.equals(beanClass)) {
+    		......
+     	}else if(ServiceBean.class.equals(beanClass)) {
+    		......
+      	}else if(ProviderConfig.class.equals(beanClass)) {
+    		......
+      	}else if(ConsumerConfig.class.equals(beanClass)) {
+    		......
+      	}
+		//标签属性解析（略）
+    	......	
+    	return beanDefinition;
+    }
+
+######小结：
+*xml ------> <dubbo:service>等自定义标签 ------> [dubbo-config-spring] DubboNamespaceHandler.java
+ ------> new DubboBeanDefinitionParser(ServiceBean.class, true) ------> BeanDefinition*
+
+*现在，我们的dubbo就已经把配置文件中定义的bean全部解析成对应的beanDefinition，为spring的getBean做好准备工作。*
 
 
+#####（2）BeanDefinition ------> Bean
 
+*从BeanDefinition转换成Bean的过程，Dubbo并没有做额外的处理，依赖的还是Spring初始化Bean机制，相信读过Spirng源码对这块都不会太陌生(不熟悉可参考[https://www.ibm.com/developerworks/cn/java/j-lo-spring-principle/](https://www.ibm.com/developerworks/cn/java/j-lo-spring-principle/ "Spring 框架的设计理念与设计模式分析"))，下面引用网上的一幅图来辅助我们了解spring内部是如何初始化bean的：*
 
+![](http://www.ibm.com/developerworks/cn/java/j-lo-spring-principle/origin_image012.gif)
 
-
-
-
+*到了这里，相信我们应该对Dubbo整个服务启动以及Bean初始化相关内容有了个大概的了解，如果想要进一步了解具体实现细节，还是推荐阅读相关源码，我始终坚信源码是最好的开发文档，小编接下来将在下几个博文当中具体介绍Dubbo服务暴露、注册、订阅等相关机制，欢迎垂阅并不吝赐教。*
 
 
 
