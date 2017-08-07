@@ -21,7 +21,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 <h3 id="design-pattern">Design Pattern</h3>
 *注释写在这里*
 
-* [设计模式之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F.md)
+* [设计模式之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88Bean%E5%8A%A0%E8%BD%BD%EF%BC%89.md)
 
 
 <h3 id="java8">Java8</h3>
