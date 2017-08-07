@@ -14,17 +14,6 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 	- [Java8](#java8)
 - [Dubbo系列](#jxjjzm-dubbo)
 	- [Dubbo源码篇](#jxjjzm-dubbo-code)
-		- [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](#jxjjzm-dubbo-code-bean)
-		- [Dubbo核心机制分析之Extension](#jxjjzm-dubbo-code-extension)
-		- [Dubbo核心机制分析之Invoker](#jxjjzm-dubbo-code-invoker)
-		- [Dubbo核心机制分析之Exchange](#jxjjzm-dubbo-code-exchange)
-		- [Dubbo核心机制分析之Filter](#jxjjzm-dubbo-code-filter)
-		- [Dubbo核心机制分析之Listener](#jxjjzm-dubbo-code-listener)
-		- [Dubbo核心机制分析之Proxy](#jxjjzm-dubbo-code-proxy)
-		- [Dubbo核心机制分析之Rpc](#jxjjzm-dubbo-code-rpc)
-		- [Dubbo过程分析之Export](#jxjjzm-dubbo-code-export)
-		- [Dubbo过程分析之Refer](#jxjjzm-dubbo-code-refer)
-		- [Dubbo过程分析之Registry](#jxjjzm-dubbo-code-registry)
 	- [Dubbo实战篇](#jxjjzm-dubbo-inAction)
 - [Redis系列](#jxjjzm-redis)
 
@@ -45,7 +34,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 <h3 id="jxjjzm-dubbo-code">Dubbo源码篇</h3>
 *这里分享了Dubbo部分源码笔记心得，希望对你有所帮助*
 
-* [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)：
+* [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)：*本篇博文主要剖析了Dubbo服务是如何启动的以及Dubbo是如何加载解析自定义配置文件并初始化Bean的。*
 * [Dubbo核心机制分析之Extension](https://www.baidu.com/)：
 * [Dubbo核心机制分析之Invoker](https://www.baidu.com/)：
 * [Dubbo核心机制分析之Exchange](https://www.baidu.com/) ：
