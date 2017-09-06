@@ -105,7 +105,11 @@ GC需要完成三件事情：
 
 - ***引用计数算法***：每个对象有一个引用计数属性，新增一个引用时计数加1，引用释放时计数减1，计数为0时可以回收。此方法简单，无法解决对象相互循环引用的问题。
 
+![](https://user-gold-cdn.xitu.io/2017/9/4/4c289a224cb4944e499fb5bfd33e592f?imageView2/0/w/1280/h/960)
+
 - ***根搜索算法***：通过一系列的名为“GC Roots”的对象作为起始点，从这个节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC Roots没有任何引用链相连（用图论的话来说就是从GC Roots到这个对象不可达）时，，则证明此对象是不可用的。Java语言中是使用根搜索算法判定对象是否存活的。
+
+![](https://user-gold-cdn.xitu.io/2017/9/4/58bfac15ca6d3076def5174ed5ca5a99?imageView2/0/w/1280/h/960)
 
 （注：在Java语言里可作为Gc Roots的对象包括下面几种：
 
@@ -263,7 +267,7 @@ ParNew收集器其实就是Serial收集器的多线程版本，除了使用多�
 - 开启参数：-XX:+UseParNewGC -XX:ParallelGCThreads 限制线程数量
 
 
-![](http://images2015.cnblogs.com/blog/331425/201606/331425-20160624174241188-1502278645.png)
+![](https://user-gold-cdn.xitu.io/2017/9/4/15465fb2e17cb5d665c25bb98acfea93?imageView2/0/w/1280/h/960)
 
 #### **3.Parallel Scavenge收集器** ####
 
@@ -277,12 +281,13 @@ Parallel Scavenge收集器提供了两个参数用于精确控制吞吐量，分
 #### **4.Serial Old收集器** ####
 Serial Old是Serial收集器的老年代版本，他同样是一个单线程收集器，使用“标记-整理”算法。这个收集器的主要意义也是被Clent模式下的虚拟机使用。如果在Server模式下，它主要还有两大用途：一个是在JDK1.5及之前的版本中与Parallel Scavenge 收集器搭配使用，另外一个就是作为CMS收集器的后备预案，在并发收集发生Concurrent Mode Failure的时候使用。
 
-![](https://i.imgur.com/6tapKTs.png)
+![](https://user-gold-cdn.xitu.io/2017/9/4/b18494b1e54851bbbd2ee52760cc3754?imageView2/0/w/1280/h/960)
 
 #### **5.Parallel Old收集器** ####
 
  老年代版本吞吐量优先收集器，Parallel Old与Parallel Scavenge的关系就好似serial与serial old一样，相互之间的区别并不大，只不过parallel old是针对年老代设计的并行搜集器而已，它采用标记/整理算法。JVM 1.6提供，在此之前，新生代使用了Parallel Scavenge收集器的话，老年代除Serial Old外别无选择，因为Parallel Scavenge无法与CMS收集器配合工作。 开启参数：-XX:-UseParallelOldGC （在JDK6以后，它也是在开启parallel scavenge之后默认的年老代搜集器。）
 
+![](https://user-gold-cdn.xitu.io/2017/9/4/25641366b43d971310a0a7cede4e406a?imageView2/0/w/1280/h/960)
 
 
 #### **6.CMS收集器** ####
@@ -290,6 +295,8 @@ Serial Old是Serial收集器的老年代版本，他同样是一个单线程收�
 CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。目前很大一部分的Java应用都集中在互联网站或B/S系统的服务端上，这类应用尤其重视服务的响应速度，希望系统停顿时间最短，以给用户带来较好的体验。CMS收集器是唯一一个真正意义上实现了应用程序与GC线程一起工作的收集器。CMS收集器是针对老年代设计的收集器，并采用标记清除算法，它也是唯一一个在老年代采用标记清除算法的收集器。
 
 从名字（包含“Mark Sweep”）上就可以看出CMS收集器是基于“标记-清除”算法实现的，它的运作过程相对于前面几种收集器来说要更复杂一些，整个过程分为4个步骤，包括：
+
+![](https://user-gold-cdn.xitu.io/2017/9/4/6f4d683644a154537b3e23d60d49c074?imageView2/0/w/1280/h/960)
 
 - 初始标记（CMS initial mark）:需要暂停应用程序，初始标记仅仅只是标记一下GC Roots能直接关联到的对象，速度很快;
 - 并发标记（CMS concurrent mark）:恢复应用程序，并发标记阶段就是进行GC Roots Tracing的过程;
@@ -304,10 +311,38 @@ CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时�
 - 缺点：（1）产生大量空间碎片，并发阶段会降低吞吐量；（2）CMS收集器对CPU资源很敏感，其实面向并发设计的程序都对CPU资源比较敏感；（3）CMS收集器无法处理浮动垃圾，可能出现“Concurrent Mode Failure”失败而导致另一次Full GC 的产生。（由于CMS并发清理阶段用户线程还在运行着，伴随程序的运行自然还会有新的垃圾不断产生，这一部分垃圾出现在标记过程之后，CMS无法在本次收集中处理掉他们，只好留待下一次GC时再将其清理掉，这一部分垃圾就称为浮动垃圾。）
 - 参数控制：（1）-XX:+UseConcMarkSweepGC  使用CMS收集器； （2）-XX:+ UseCMSCompactAtFullCollection Full GC后进行一次碎片整理，整理过程是独占的，会引起停顿时间变长；（3）-XX:+CMSFullGCsBeforeCompaction  设置进行几次Full GC后，进行一次碎片整理；-XX:ParallelCMSThreads  设定CMS的线程数量（一般情况约等于可用CPU数量）
 
-#### **7.G1收集器**  ####
+#### **7.G1收集器（Garbage First）**  ####
 
+G1收集器是垃圾收集器理论进一步发展的产物，是目前技术发展的最前沿成果之一，它与前面的CMS收集器相比有两个显著的改进：
 
+- 一是G1收集器是基于“标记-整理（压缩）”算法实现的收集器，也就是说它不会产生空间碎片，这对于长时间运行的应用系统来说非常重要。
+- 二是它可以非常精确的控制停顿，既能让使用者明确指定在一个长度为M毫秒的时间片段内，消耗在垃圾收集的时间不得超过N毫秒，这几乎已经是实时Java的垃圾收集器的特征了。（G1收集器可以实现在基于不牺牲吞吐量的前提下完成低停顿的内存回收，这是由于它能够极力地避免全区域的垃圾收集，之前的收集器进行收集的范围都是整个新生代或老年代，而G1将整个Java堆（包括新生代、老年代）划分为多个大小固定的独立区域（Region）,并且跟踪这些区域里面的垃圾堆积程度，在后台维护一个优先列表，每次根据允许的收集时间，优先回收垃圾最多的区域（这就是Garbage First名称的由来），区域划分及有优先级的区域回收，保证了G1收集器在有限的时间内可以获得最高的收集效率。）
 
+![](http://images2015.cnblogs.com/blog/331425/201606/331425-20160624174247125-2073079982.jpg)
+
+收集步骤：
+
+1）、标记阶段，首先初始标记(Initial-Mark),这个阶段是停顿的(Stop the World Event)，并且会触发一次普通Mintor GC。对应GC log:GC pause (young) (inital-mark)
+
+2）、Root Region Scanning，程序运行过程中会回收survivor区(存活到老年代)，这一过程必须在young GC之前完成。
+
+3）、Concurrent Marking，在整个堆中进行并发标记(和应用程序并发执行)，此过程可能被young GC中断。在并发标记阶段，若发现区域对象中的所有对象都是垃圾，那个这个区域会被立即回收(图中打X)。同时，并发标记过程中，会计算每个区域的对象活性(区域中存活对象的比例)。
+
+![](http://images2015.cnblogs.com/blog/331425/201606/331425-20160624174249203-774809988.png)
+
+4）、Remark, 再标记，会有短暂停顿(STW)。再标记阶段是用来收集 并发标记阶段 产生新的垃圾(并发阶段和应用程序一同运行)；G1中采用了比CMS更快的初始快照算法:snapshot-at-the-beginning (SATB)。
+
+5）、Copy/Clean up，多线程清除失活对象，会有STW。G1将回收区域的存活对象拷贝到新区域，清除Remember Sets，并发清空回收区域并把它返回到空闲区域链表中。
+
+![](http://images2015.cnblogs.com/blog/331425/201606/331425-20160624174250656-1729618538.png)
+
+6）、复制/清除过程后。回收区域的活性对象已经被集中回收到深蓝色和深绿色区域。
+
+![](http://images2015.cnblogs.com/blog/331425/201606/331425-20160624174252078-703896755.png)
+
+#### **8.常用的收集器组合及垃圾收集器参数总结**  ####
+
+//TODO：
 
 ### （四）、内存分配与回收策略 ###
 
