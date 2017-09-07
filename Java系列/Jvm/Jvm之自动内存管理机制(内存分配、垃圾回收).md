@@ -342,7 +342,11 @@ G1收集器是垃圾收集器理论进一步发展的产物，是目前技术发
 
 #### **8.常用的收集器组合及垃圾收集器参数总结**  ####
 
-//TODO：
+- 常用的收集器组合：（1）Serial + Serial Old（2）Serial + (CMDS+Serial Old)（3）ParNew + CMS（4）ParNew + Serial Old（5）Parallel Scavenge + Seria Old（6）Parallel Scavenge + Paral Old（7）G1 + G1
+
+- 垃圾收集相关的常用参数：
+![](https://i.imgur.com/25I8jxL.png)
+
 
 ### （四）、内存分配与回收策略 ###
 
