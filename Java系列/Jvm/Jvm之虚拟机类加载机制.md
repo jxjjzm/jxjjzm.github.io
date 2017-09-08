@@ -204,7 +204,25 @@ ClassLoader源码分析：
 - Tomcat的WebappClassLoader就会先加载自己的class,找不到再委托parent
 - OSGI的ClassLoader形成网状结构，根据需要自由加载Class 
 
+以Tomcat为例：
 
+一个功能健全的WEB服务器都要解决如下几个问题：
+
+- 部署在同一个服务器上的两个web应用程序所使用的Java类库可以实现相互隔离。
+- 部署在同一个服务器上的两个web应用程序所使用的Java类库可以实现相互共享。
+- 服务器需要尽可能的保证自身的安全不受部署的Web应用程序影响。
+- 支持JSP应用的web服务器，十有八九都需要支持HotSwap功能。
+
+在Tomcat的目录结构中，有三组目录（"/common/*","/server/*","/shared/*"）可以存放Java类库，另外还可以加上Web应用程序自身的目录"/WEB-INF/*",一共四组，把Java类库放置在这些目录的含义分别是：
+
+- 放置在/common目录中：类库可被Tomcat和所有的Web应用程序共同使用。
+- 放置在/server目录中：类库可被Tomcat使用，对所有的web应用程序都不可见。
+- 放置在/shared目录中：类库可被所有的web应用程序共同使用，但对Tomcat自己不可见。
+- 放置在/WebApp/WEB_INF目录中：类库仅仅被次Web应用程序使用，对Tomcat和其他Web应用程序都不可见。
+
+为了支持这套目录结构，并对目录里面的类库进行加载和隔离，Tomcat自定义了多个类加载器：
+
+![](http://upload-images.jianshu.io/upload_images/6715251-b21326fe843cce9c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
