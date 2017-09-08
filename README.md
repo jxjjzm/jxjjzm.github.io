@@ -79,7 +79,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 - [Jvm之自动内存管理机制(内存分配、垃圾回收)](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6(%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6).md "Jvm之自动内存管理机制(内存分配、垃圾回收)")
 - [Jvm之虚拟机类加载机制](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6.md "Jvm之虚拟机类加载机制")
-- [Jvm之虚拟机性能监控与故障处理工具](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E4%B8%8E%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7.md "Jvm之虚拟机性能监控与故障处理工具")
+- [Jvm之虚拟机性能监控与故障处理工具](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%91%BD%E4%BB%A4%E4%B8%8E%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7.md)
 
 
 
