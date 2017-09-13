@@ -377,6 +377,42 @@ JDK1.8 HashMap底层数据结构是"位桶（动态数组）+单向链表+红黑
 		            (number > 1) ? Integer.highestOneBit((number - 1) << 1) : 1;
 		}
 
+		//新增元素的key为null的话：
+		private V putForNullKey(V value) {
+		    //遍历数组的第一个元素，看是否已存在为null的key：
+		    for (java.util.HashMap.Entry<K,V> e = table[0]; e != null; e = e.next) {
+		        //如果存在，则将原有的value替换
+		        if (e.key == null) {
+		            V oldValue = e.value;
+		            e.value = value;
+		            e.recordAccess(this);
+		            //返回原来的value：
+		            return oldValue;
+		        }
+		    }
+		    //如果不包含null，则进行添加操作：
+		    modCount++;
+		    //向数组中的第一个角标下插入为null的key--value：
+		    addEntry(0, null, value, 0);
+		    return null;
+		}
+
+
+		void createEntry(int hash, K key, V value, int bucketIndex) {
+		    //获取此角标下的Entry对象：
+		    java.util.HashMap.Entry<K,V> e = table[bucketIndex];
+		    
+		    //无论该角标下是否有元素，都将新元素插入该位置下，将原来的元素置为第二个。
+		    table[bucketIndex] = new java.util.HashMap.Entry<>(hash, key, value, e);
+		
+		    //Map集合长度+1
+		    size++;
+		}
+
+
+
+
+
 
 
 
@@ -391,10 +427,10 @@ JDK1.8 HashMap底层数据结构是"位桶（动态数组）+单向链表+红黑
 		  final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 		                 boolean evict) {
 		      Node<K,V>[] tab; Node<K,V> p; int n, i;
-		      // 步骤①：tab为空则创建
+		      // 步骤①：table未初始化或者长度为0，进行扩容
 		     if ((tab = table) == null || (n = tab.length) == 0)
 		         n = (tab = resize()).length;
-		     // 步骤②：计算index，并对null做处理 
+		     // 步骤②： (n - 1) & hash 确定元素存放在哪个桶中，桶为空，新生成结点放入桶中(此时，这个结点是放在数组中)
 		     if ((p = tab[i = (n - 1) & hash]) == null) 
 		         tab[i] = newNode(hash, key, value, null);
 		     else {
@@ -409,9 +445,11 @@ JDK1.8 HashMap底层数据结构是"位桶（动态数组）+单向链表+红黑
 		         // 步骤⑤：该链为链表
 		         else {
 		             for (int binCount = 0; ; ++binCount) {
+						//p第一次指向表头,以后依次后移
 		                 if ((e = p.next) == null) {
+							//e为空，表示已到表尾也没有找到key值相同节点，则新建节点
 		                     p.next = newNode(hash, key,value,null);
-		                        //链表长度大于8转换为红黑树进行处理
+		                        //链表长度大于阀值8转换为红黑树进行处理
 		                     if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st  
 		                         treeifyBin(tab, hash);
 		                     break;
@@ -463,14 +501,127 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 
 - JDK1.7
 
+			//移除hashMap中的元素，通过key：
+			public V remove(Object key) {
+			    //移除HashMap数组中的Entry对象：
+			    java.util.HashMap.Entry<K,V> e = removeEntryForKey(key);
+			    return (e == null ? null : e.value);
+			}
+			
+			//通过key移除数组中Entry：
+			final java.util.HashMap.Entry<K,V> removeEntryForKey(Object key) {
+			    //如果Hashmap集合为0，则返回null：
+			    if (size == 0) {
+			        return null;
+			    }
+			    //计算key的hash值：
+			    int hash = (key == null) ? 0 : hash(key);
+			    //计算hash值对应的数组角标：
+			    int i = indexFor(hash, table.length);
+			
+			    //获取key对应的Entry对象：
+			    java.util.HashMap.Entry<K,V> prev = table[i];
+			    //将此对象赋值给e：
+			    java.util.HashMap.Entry<K,V> e = prev;
+			
+			    //单向链表的遍历：
+			    while (e != null) {
+			        //获取当前元素的下一个元素：
+			        java.util.HashMap.Entry<K,V> next = e.next;
+			
+			        Object k;
+			        //判断元素的hash值、equals方法，是否和传入的key相同：
+			        if (e.hash == hash &&
+			                ((k = e.key) == key || (key != null && key.equals(k)))) {
+			            //增加操作数：
+			            modCount++;
+			
+			            //减少元素数量：
+			            size--;
+			            //当为链表的第一个元素时，直接将下一个元素顶到链表头部：
+			            if (prev == e)
+			                table[i] = next;
+			            else
+			                //当前元素的下下一个元素
+			                prev.next = next;
+			            //删除当前遍历到的元素：空方法，
+			            // 将被删除的元素不再与map有关联，没有置为null之类的操作；
+			            e.recordRemoval(this);
+			            return e;
+			        }
+			        //不相同的话，就把
+			        prev = e;
+			        e = next;
+			    }
+			    return e;
+			}
+
+
+
+与查找相同，删除元素的方法也比较简单，主要是将元素移除HashMap的Entry[]数组。如果为数组角标下的第一个元素，则直接链表的第二个元素移动到头部来。如果不为第一个元素，则将当前元素的前一个元素的next属性指向当前元素的下一个元素即可；
 
 
 
 - JDK1.8
 
+			public V remove(Object key) {
+			        Node<K,V> e;
+			        return (e = removeNode(hash(key), key, null, false, true)) == null ?
+			            null : e.value;
+			    }
 
 
 
+			 /**
+			     * Implements Map.remove and related methods
+			     *
+			     * @param hash hash for key
+			     * @param key the key
+			     * @param value the value to match if matchValue, else ignored
+			     * @param matchValue if true only remove if value is equal
+			     * @param movable if false do not move other nodes while removing
+			     * @return the node, or null if none
+			     */
+			    final Node<K,V> removeNode(int hash, Object key, Object value,
+			                               boolean matchValue, boolean movable) {
+			        Node<K,V>[] tab; Node<K,V> p; int n, index;
+			        if ((tab = table) != null && (n = tab.length) > 0 &&
+			            (p = tab[index = (n - 1) & hash]) != null) {
+			            Node<K,V> node = null, e; K k; V v;
+			            if (p.hash == hash &&
+			                ((k = p.key) == key || (key != null && key.equals(k))))
+			                node = p;
+			            else if ((e = p.next) != null) {
+			                if (p instanceof TreeNode)
+			                    node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
+			                else {
+			                    do {
+			                        if (e.hash == hash &&
+			                            ((k = e.key) == key ||
+			                             (key != null && key.equals(k)))) {
+			                            node = e;
+			                            break;
+			                        }
+			                        p = e;
+			                    } while ((e = e.next) != null);
+			                }
+			            }
+			            if (node != null && (!matchValue || (v = node.value) == value ||
+			                                 (value != null && value.equals(v)))) {
+			                if (node instanceof TreeNode)
+			                    ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
+			                else if (node == p)
+			                    tab[index] = node.next;
+			                else
+			                    p.next = node.next;
+			                ++modCount;
+			                --size;
+			                afterNodeRemoval(node);
+			                return node;
+			            }
+			        }
+			        return null;
+			    }
 
 
 
@@ -483,11 +634,90 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 - JDK1.7
 
 
+			//通过key 获取对应的value:
+			public V get(Object key) {
+			    if (key == null)
+			        //获取key==null的value：
+			        return getForNullKey();
+			
+			    //获取key不为null的value值：
+			    java.util.HashMap.Entry<K,V> entry = getEntry(key);
+			
+			    //返回对应的value：
+			    return null == entry ? null : entry.getValue();
+			}
+			
+			//获取hashMap中key为 null的value值：
+			private V getForNullKey() {
+			    //hashmap中没有元素，则返回null：
+			    if (size == 0) {
+			        return null;
+			    }
+			    //获取Entry数组中，角标为0的Entry对象（put的时候如果有null的key，就存放到角标为0的位置）
+			    //获取角标为0的Entry对象，遍历整个链表，看是否有key为null的key：返回对应的value：
+			    for (java.util.HashMap.Entry<K,V> e = table[0]; e != null; e = e.next) {
+			        if (e.key == null)
+			            return e.value;
+			    }
+			    //如果都不存在，则返回null：
+			    return null;
+			}
+			
+			 //通过对应的key获取 Entry对象：
+			final java.util.HashMap.Entry<K,V> getEntry(Object key) {
+			    //hashmap长度为0 ，则返回null：
+			    if (size == 0) {
+			        return null;
+			    }
+			    //获取key对应的hash值：若key为null,则hash值为0；
+			    int hash = (key == null) ? 0 : hash(key);
+			    //计算hash值对应数组的角标，获取数组中角标下的Entry对象：对该元素所属的链表进行遍历；
+			    for (java.util.HashMap.Entry<K,V> e = table[indexFor(hash, table.length)]; e != null; e = e.next) {
+			        Object k;
+			        //判断key的hash值，再调用equlas方法进行判断：hash值可能会相同，equals进一步验证；
+			        if (e.hash == hash &&
+			                ((k = e.key) == key || (key != null && key.equals(k))))
+			            return e;
+			    }
+			    //没找到返回null:
+			    return null;
+			}
+
+
+相比于新增来说，HashMap的查找方法就很简单了。一种是获取key为null的情况，一种是key非null的情况。
 
 
 - JDK1.8
 
-
+			public V get(Object key) {
+			    Node<k,v> e;
+			    return (e = getNode(hash(key), key)) == null ? null : e.value;
+			}
+			 
+			 
+			final Node<k,v> getNode(int hash, Object key) {
+			    Node<k,v>[] tab; Node<k,v> first, e; int n; K k;
+			    //hash & (length-1)得到对象的保存位
+			    if ((tab = table) != null && (n = tab.length) > 0 &&
+			        (first = tab[(n - 1) & hash]) != null) {
+			        if (first.hash == hash && // always check first node
+			            ((k = first.key) == key || (key != null && key.equals(k))))
+			            return first;
+			        if ((e = first.next) != null) {
+			            //如果第一个节点是TreeNode,说明采用的是数组+红黑树结构处理冲突
+			            //遍历红黑树，得到节点值
+			            if (first instanceof TreeNode)
+			                return ((TreeNode<k,v>)first).getTreeNode(hash, key);
+			            //链表结构处理
+			            do {
+			                if (e.hash == hash &&
+			                    ((k = e.key) == key || (key != null && key.equals(k))))
+			                    return e;
+			            } while ((e = e.next) != null);
+			        }
+			    }
+			    return null;
+			}
 
 
 
@@ -500,54 +730,187 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 
 - JDK1.7
 
+		//将HashMap进行扩容：
+		void resize(int newCapacity) {
+		    //将原有Entry数组赋值给oldTable参数：
+		    java.util.HashMap.Entry[] oldTable = table;
+		    
+		    //获取现阶段Entry数组的长度：
+		    int oldCapacity = oldTable.length;
+		    
+		    //如果现阶段Entry数组的长度 == MAXIMUM_CAPACITY的话：
+		    if (oldCapacity == MAXIMUM_CAPACITY) {
+		        //将阈值设置为Integer的最大值，并返回
+		        threshold = Integer.MAX_VALUE;
+		        //没有进行扩容操作：
+		        return;
+		    }
+		    
+		    //创建新Entry数组：容量为现有2倍大小
+		    java.util.HashMap.Entry[] newTable = new java.util.HashMap.Entry[newCapacity];
+		    
+		    //将原有Entry数组中的元素，添加到新数组中：
+		    transfer(newTable, initHashSeedAsNeeded(newCapacity));
+		    
+		    //新数组赋值给table属性：
+		    table = newTable;
+		    //重新计算扩容阈值：
+		    threshold = (int)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + 1);
+		}
+		
+		//原有元素复制到新数组中：
+		void transfer(java.util.HashMap.Entry[] newTable, boolean rehash) {
+		    //新数组长度：
+		    int newCapacity = newTable.length;
+		    
+		    //遍历原有Entry数组：
+		    for (java.util.HashMap.Entry<K,V> e : table) {
+		        //判断Entry[]中不为null的对象： 
+		        while(null != e) {
+		            java.util.HashMap.Entry<K,V> next = e.next;
+		            //此处需要再次判断hashSeed是否进行初始化：
+		            if (rehash) {
+		                //对于Strig类型来说，hashSeed初始化后，需要调用sun.misc.Hashing.stringHash32来计算hash值
+		                e.hash = null == e.key ? 0 : hash(e.key);
+		            }
+		            //计算新数组中元素所处于的角标：
+		            int i = indexFor(e.hash, newCapacity);
+		            e.next = newTable[i];
+		            newTable[i] = e;
+		            e = next;
+		        }
+		    }
+		}
 
 
+
+			//元素key的hash值计算：
+			final int hash(Object k) {
+			    int h = hashSeed;
+			    //如果为String类型，并且hashSeed不等于0，则会调用sun.misc.Hashing.stringHash32()进行hash值计算
+			    if (0 != h && k instanceof String) {
+			        return sun.misc.Hashing.stringHash32((String) k);
+			    }
+			
+			    //计算key的hash值，调用key的hashCode方法：
+			    h ^= k.hashCode();
+			    h ^= (h >>> 20) ^ (h >>> 12);
+			
+			    //经过一系列位运算，得出一个hash值：
+			    return h ^ (h >>> 7) ^ (h >>> 4);
+			}
+
+
+			/计算元素所处于数组的位置，进行与运算
+			//一般使用hash值对length取模（即除法散列法）
+			static int indexFor(int h, int length) {
+				return h & (length-1);
+			}
 
 - JDK1.8
 
+			final Node<K,V>[] resize() {
+			      Node<K,V>[] oldTab = table;
+			      int oldCap = (oldTab == null) ? 0 : oldTab.length;
+			      int oldThr = threshold;
+			      int newCap, newThr = 0;
+			      if (oldCap > 0) {
+			          // 超过最大值就不再扩充了，就只好随你碰撞去吧
+			          if (oldCap >= MAXIMUM_CAPACITY) {
+			              threshold = Integer.MAX_VALUE;
+			             return oldTab;
+			         }
+			         // 没超过最大值，就扩充为原来的2倍
+			         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+			                  oldCap >= DEFAULT_INITIAL_CAPACITY)
+			             newThr = oldThr << 1; // double threshold
+			     }
+			     else if (oldThr > 0) // initial capacity was placed in threshold
+			         newCap = oldThr;
+			     else {               // zero initial threshold signifies using defaults
+			         newCap = DEFAULT_INITIAL_CAPACITY;
+			         newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+			     }
+			     // 计算新的resize上限
+			     if (newThr == 0) {
+			
+			         float ft = (float)newCap * loadFactor;
+			         newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+			                   (int)ft : Integer.MAX_VALUE);
+			     }
+			     threshold = newThr;
+			     @SuppressWarnings({"rawtypes"，"unchecked"})
+			         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+			     table = newTab;
+			     if (oldTab != null) {
+			         // 把每个bucket都移动到新的buckets中
+			         for (int j = 0; j < oldCap; ++j) {
+			             Node<K,V> e;
+			             if ((e = oldTab[j]) != null) {
+			                 oldTab[j] = null;
+			                 if (e.next == null)
+			                     newTab[e.hash & (newCap - 1)] = e;
+			                 else if (e instanceof TreeNode)
+			                     ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+			                 else { // 链表优化重hash的代码块
+			                     Node<K,V> loHead = null, loTail = null;
+			                     Node<K,V> hiHead = null, hiTail = null;
+			                     Node<K,V> next;
+			                     do {
+			                         next = e.next;
+			                         // 原索引
+			                         if ((e.hash & oldCap) == 0) {
+			                             if (loTail == null)
+			                                 loHead = e;
+			                             else
+			                                 loTail.next = e;
+			                             loTail = e;
+			                         }
+			                         // 原索引+oldCap
+			                         else {
+			                             if (hiTail == null)
+			                                 hiHead = e;
+			                             else
+			                                 hiTail.next = e;
+			                             hiTail = e;
+			                         }
+			                     } while ((e = next) != null);
+			                     // 原索引放到bucket里
+			                     if (loTail != null) {
+			                         loTail.next = null;
+			                         newTab[j] = loHead;
+			                     }
+			                     // 原索引+oldCap放到bucket里
+			                     if (hiTail != null) {
+			                         hiTail.next = null;
+			                         newTab[j + oldCap] = hiHead;
+			                     }
+			                 }
+			             }
+			         }
+			     }
+			     return newTab;
+			 }
+
+
+
+			static final int hash(Object key) {
+			    int h;
+			    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+			}
 
 
 
 
 
 
-### 六、迭代器 ###
+
+确定哈希桶数组索引位置:
+
+![](http://tech.meituan.com/img/java-hashmap/hashMap%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE.png)
 
 
-
-- JDK1.7
-
-
-
-
-- JDK1.8
-
-
-
-
-
-
-
-七、其他
-
-
-
-- JDK1.7
-
-
-
-
-- JDK1.8
-
-
-
-
-
-
-
-
-
-
+在JDK1.8 的实现中，优化了高位运算的算法，通过hashCode()的高16位异或低16位实现的：(h = k.hashCode()) ^ (h >>> 16)，主要是从速度、功效、质量来考虑的，这么做可以在数组table的length比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。
 
 
 
