@@ -308,7 +308,7 @@ JDK1.7 HashMap底层数据结构是"位桶（动态数组）+单向链表"：
 
 JDK1.8 HashMap底层数据结构是"位桶（动态数组）+单向链表+红黑树":
 
-![](http://images2015.cnblogs.comblog/616953/201603/616953-20160304192851940-1880633940.png)
+![](http://upload-images.jianshu.io/upload_images/1541350-e68f9dc2a9042300?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
@@ -409,11 +409,24 @@ JDK1.8 HashMap底层数据结构是"位桶（动态数组）+单向链表+红黑
 		    size++;
 		}
 
+		void addEntry(int hash, K key, V value, int bucketIndex) {
+			 //如果要加入的位置有值，将该位置原先的值设置为新entry的next,也就是新entry链表的下一个节点
+	        Entry<K,V> e = table[bucketIndex];
+	        table[bucketIndex] = new Entry<>(hash, key, value, e);
+			//如果大于临界值就扩容
+	        if (size++ >= threshold) 
+				//以2的倍数扩容
+	            resize(2 * table.length); 
+    	}
 
 
 
 
 
+　 
+
+- 如果key不为null，则同样先求出key的hash值，根据hash值得出在table中的索引，而后遍历对应的单链表，如果单链表中存在与目标key相等的键值对，则将新的value覆盖旧的value，并将旧的value返回，如果找不到与目标key相等的键值对，或者该单链表为空，则将该键值对插入到改单链表的头结点位置（每次新插入的节点都是放在头结点的位置），该操作是有addEntry方法实现的
+- 如果key为null，则将其添加到table[0]对应的链表中，由putForNullKey（）实现。
 
 
 
@@ -687,6 +700,10 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 相比于新增来说，HashMap的查找方法就很简单了。一种是获取key为null的情况，一种是key非null的情况。
 
 
+- 如果key不为null，则先求的key的hash值，根据hash值找到在table中的索引，在该索引对应的单链表中查找是否有键值对的key与目标key相等，有就返回对应的value，没有则返回null。
+- 如果key为null，则直接从哈希表的第一个位置table[0]对应的链表上查找。记住，key为null的键值对永远都放在以table[0]为头结点的链表中，当然不一定是存放在头结点table[0]中。
+
+
 - JDK1.8
 
 			public V get(Object key) {
@@ -775,6 +792,7 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 		            }
 		            //计算新数组中元素所处于的角标：
 		            int i = indexFor(e.hash, newCapacity);
+					//注意在do while循环的过程中，每次循环都是将下个节点指向newTable[i] ，是因为如果有相同的散列值i，上个节点已经放置在newTable[i]位置，这里还是下一个节点的next指向上一个节点（也就是使用了单链表的头插入方式，同一位置上新元素总会被放在链表的头部位置）
 		            e.next = newTable[i];
 		            newTable[i] = e;
 		            e = next;
@@ -796,7 +814,7 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 			    h ^= k.hashCode();
 			    h ^= (h >>> 20) ^ (h >>> 12);
 			
-			    //经过一系列位运算，得出一个hash值：
+			    //经过一系列位运算，得出一个hash值（笔者只知道用位的操作比取模操作效率更高，但为什么需要这样移位就不得所知了，权当是一个数学公式吧）：
 			    return h ^ (h >>> 7) ^ (h >>> 4);
 			}
 
@@ -806,6 +824,20 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 			static int indexFor(int h, int length) {
 				return h & (length-1);
 			}
+
+
+JDK1.7 HashMap扩容的时候，新建了一个HashMap的底层数组（一般扩容2倍），而后调用transfer方法，将旧HashMap数组中的全部元素添加到新的HashMap数组中（要rehash,即重新计算元素在新的数组中的索引位置，因为由于数组的容量已经变大，也就导致hash算法indexFor已经发生变化，原先在一个链表中的元素，在新的hash下可能会产生不同的散列值，所以所有元素都要重新计算后安顿一番）。扩容是需要进行数组复制的，非常消耗性能的操作，所以我们在用HashMap的时，最好能提前预估下HashMap中元素的个数，这样有助于提高HashMap的性能。
+
+![](http://tech.meituan.com/img/java-hashmap/jdk1.7%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png)
+
+
+- HashMap采用"h & (length-1)"的方法来代替取模，同样实现了均匀的散列，但效率要高的多，这也是HashMap对Hashtable的一个改进。
+- HashMap中哈希表的容量为什么一定要求是2的整数次幂？首先，length为2的整数次幂的话，h&(length-1)就相当于对length取模，这样便保证了散列的均匀，同时也提升了效率；其次，其次，length为2的整数次幂的话，为偶数，这样length-1为奇数，奇数的最后一位是1，这样便保证了h&(length-1)的最后一位可能为0，也可能为1（这取决于h的值），即与后的结果可能为偶数，也可能为奇数，这样便可以保证散列的均匀性，而如果length为奇数的话，很明显length-1为偶数，它的最后一位是0，这样h&(length-1)的最后一位肯定为0，即只能为偶数，这样任何hash值都只会被散列到数组的偶数下标位置上，这便浪费了近一半的空间。总而言之，length取2的整数次幂，是为了使不同hash值发生碰撞的概率较小，这样就能使元素在哈希表中均匀地散列。
+
+
+下面举个例子说明下扩容过程。假设了我们的hash算法就是简单的用key mod 一下表的大小（也就是数组的长度）。其中的哈希桶数组table的size=2， 所以key = 3、7、5，put顺序依次为 5、7、3。在mod 2以后都冲突在table[1]这里了。这里假设负载因子 loadFactor=1，即当键值对的实际大小size 大于 table的实际大小时进行扩容。接下来的三个步骤是哈希桶数组 resize成4，然后所有的Node重新rehash的过程。
+
+![](http://tech.meituan.com/img/java-hashmap/jdk1.7%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png)
 
 - JDK1.8
 
@@ -896,6 +928,7 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 
 			static final int hash(Object key) {
 			    int h;
+				// h ^ (h >>> 16)  高位参与运算
 			    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
 			}
 
@@ -904,13 +937,43 @@ JDK1.8 HashMap添加操作实现步骤大致如下：
 
 
 
+**1.高位运算算法优化：**
 
-确定哈希桶数组索引位置:
+在JDK1.8 的实现中，优化了高位运算的算法，通过hashCode()的高16位异或低16位实现的：(h = k.hashCode()) ^ (h >>> 16)，主要是从速度、功效、质量来考虑的，这么做可以在数组table的length比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。JDK1.8中确定哈希桶数组索引位置如下图所示:
 
 ![](http://tech.meituan.com/img/java-hashmap/hashMap%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE.png)
 
 
-在JDK1.8 的实现中，优化了高位运算的算法，通过hashCode()的高16位异或低16位实现的：(h = k.hashCode()) ^ (h >>> 16)，主要是从速度、功效、质量来考虑的，这么做可以在数组table的length比较小的时候，也能保证考虑到高低Bit都参与到Hash的计算中，同时不会有太大的开销。
+**2.重新Hash算法优化：**
+
+JDK1.8 对rehash(重新哈希)也做了些优化：
+
+经过观测可以发现，我们使用的是2次幂的扩展(指长度扩为原来2倍)，所以，元素的位置要么是在原位置，要么是在原位置再移动2次幂的位置。看下图可以明白这句话的意思，n为table的长度，图（a）表示扩容前的key1和key2两种key确定索引位置的示例，图（b）表示扩容后key1和key2两种key确定索引位置的示例，其中hash1是key1对应的哈希与高位运算结果。
+
+![](http://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE1.png)
+
+元素在重新计算hash之后，因为n变为2倍，那么n-1的mask范围在高位多1bit(红色)，因此新的index就会发生这样的变化：
+
+![](http://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE2.png)
+
+因此，我们在扩充HashMap的时候，不需要像JDK1.7的实现那样重新计算hash，只需要看看原来的hash值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”，可以看看下图为16扩充为32的resize示意图：
+
+![](http://tech.meituan.com/img/java-hashmap/jdk1.8%20hashMap%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png)
+
+
+这两个设计确实非常的巧妙，既省去了重新计算hash值的时间，而且同时，由于新增的1bit是0还是1可以认为是随机的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
