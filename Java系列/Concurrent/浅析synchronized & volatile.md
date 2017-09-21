@@ -145,6 +145,75 @@ lock前缀指令在多核处理器下会引发了两件事情：
 
 ![](https://i.imgur.com/BzKOlm1.png)
 
+#### 3.volatile 使用场景  ####
+
+下面引用了网上volatile几种典型使用场景供读者参考：
+
+![](https://i.imgur.com/0FHNUiz.png)
+
+![](https://i.imgur.com/YP2FCs3.png)
+
+![](https://i.imgur.com/dIdXR2r.png)
+
+![](https://i.imgur.com/Gnb95MD.png)
+
+![](https://i.imgur.com/7dgG1WC.png)
+
 
 
 ### 三、锁的优化及注意事项 ###
+
+这里我觉得是时候对锁的相关知识进行普及了，别急.....,接着往下看吧！！！
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
