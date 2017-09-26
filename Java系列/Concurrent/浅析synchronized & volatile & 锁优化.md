@@ -245,14 +245,6 @@ lock前缀指令在多核处理器下会引发了两件事情：
 
 #### 7.偏向锁/轻量级锁/重量级锁 ####
 
-http://www.jianshu.com/p/c5058b6fe8e5/
-
-http://blog.csdn.net/chenssy/article/details/54883355
-
-http://www.cnblogs.com/charlesblc/p/5994162.html
-
-http://blog.163.com/silver9886@126/blog/static/35971862201472274958280/
-
 
 JDK 1.6 为了减少获得锁和释放锁所带来的性能消耗，引入了"偏向锁"和"轻量级锁"，所以在JDK1.6里锁共有四种状态：无锁、偏向锁、轻量级锁和重量级锁（会随着竞争情况逐渐升级（锁可以升级但不能降级））。
 
