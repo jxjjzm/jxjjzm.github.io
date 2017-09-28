@@ -9,6 +9,75 @@ Semaphore称为计数信号量，它允许n个任务同时访问某个资源，�
 广义上来说，信号量是对锁的扩展。无论是内部锁synchronized还是重入锁reentrantLock,一次都只允许一个线程访问一个资源，而信号量却可以指定多个线程同时访问某一个资源。Semaphore内部维护了一个计数器，其值为可以访问的共享资源的个数。一个线程要访问共享资源，先获得信号量，如果信号量的计数器值大于1，意味着有共享资源可以访问，则使其计数器值减去1，再访问共享资源。
 如果计数器值为0,线程进入休眠。当某个线程使用完共享资源后，释放信号量，并将信号量内部的计数器加1，之前进入休眠的线程将被唤醒并再次试图获得信号量。
 
+使用示例：
+
+	package com.hust.grid.leesf.semaphore;
+	
+	import java.util.concurrent.Semaphore;
+	
+	class MyThread extends Thread {
+	    private Semaphore semaphore;
+	    
+	    public MyThread(String name, Semaphore semaphore) {
+	        super(name);
+	        this.semaphore = semaphore;
+	    }
+	    
+	    public void run() {        
+	        int count = 3;
+	        System.out.println(Thread.currentThread().getName() + " trying to acquire");
+	        try {
+	            semaphore.acquire(count);
+	            System.out.println(Thread.currentThread().getName() + " acquire successfully");
+	            Thread.sleep(1000);
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        } finally {
+	            semaphore.release(count);
+	            System.out.println(Thread.currentThread().getName() + " release successfully");
+	        }
+	    }
+	}
+	
+	public class SemaphoreDemo {
+	    public final static int SEM_SIZE = 10;
+	    
+	    public static void main(String[] args) {
+	        Semaphore semaphore = new Semaphore(SEM_SIZE);
+	        MyThread t1 = new MyThread("t1", semaphore);
+	        MyThread t2 = new MyThread("t2", semaphore);
+	        t1.start();
+	        t2.start();
+	        int permits = 5;
+	        System.out.println(Thread.currentThread().getName() + " trying to acquire");
+	        try {
+	            semaphore.acquire(permits);
+	            System.out.println(Thread.currentThread().getName() + " acquire successfully");
+	            Thread.sleep(1000);
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        } finally {
+	            semaphore.release();
+	            System.out.println(Thread.currentThread().getName() + " release successfully");
+	        }
+	        
+	                
+	    }
+	}
+
+
+运行结果（某一次）：　
+
+	main trying to acquire
+	main acquire successfully
+	t1 trying to acquire
+	t1 acquire successfully
+	t2 trying to acquire
+	t1 release successfully
+	main release successfully
+	t2 acquire successfully
+	t2 release successfully
+
 
 #### 二、Semaphore 源码分析 ####
 
@@ -160,4 +229,6 @@ Semaphore与ReentrantLock的内部类的结构相同，类内部总共存在Sync
 
 
 
+**总结：**
 
+经过分析可知Semaphore的内部工作流程也是基于AQS，并且不同于CyclicBarrier和ReentrantLock，单独使用Semaphore是不会使用到AQS的条件队列的，其实，只有进行await操作才会进入条件队列，其他的都是在同步队列中，只是当前线程会被park。
