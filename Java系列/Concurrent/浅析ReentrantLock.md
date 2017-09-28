@@ -584,6 +584,20 @@ unlock内部使用Sync的release(int arg)释放锁，而release(int arg)是在AQ
 只有当同步状态彻底释放后该方法才会返回true。当state == 0 时，则将锁持有线程设置为null，free= true，表示释放成功。
 
 
+### 三、说说Condition ###
+
+Condition主要是为了在J.U.C框架中提供和Java传统的监视器风格的wait，notify和notifyAll方法类似的功能。**JDK的官方解释如下**：条件（也称为条件队列 或条件变量）为线程提供了一个含义，以便在某个状态条件现在可能为 true 的另一个线程通知它之前，一直挂起该线程（即让其“等待”）。因为访问此共享状态信息发生在不同的线程中，所以它必须受保护，因此要将某种形式的锁与该条件相关联。等待提供一个条件的主要属性是：以原子方式 释放相关的锁，并挂起当前线程，就像 Object.wait 做的那样。 （Condition实质上是被绑定到一个锁上，这也是为什么将ReentrantLock放在一起分析的原因。）
+
+
+http://blog.csdn.net/chenssy/article/details/69279356
+
+http://blog.csdn.net/wojiushiwo945you/article/details/42239113
+
+http://blog.csdn.net/coslay/article/details/45217069
+
+http://www.cnblogs.com/go2sea/p/5630355.html
+
+
 到这里我们该告一段落了，我们不难发现，ReentrantLock底层实现基本上都是在AQS基础上完成的，所以如果你对AQS不甚了解建议还是回过头来看下前面的 [《浅析Unsafe & CAS & AQS》](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Unsafe%20%26%20CAS%20%26%20AQS.md) 。
 
 
