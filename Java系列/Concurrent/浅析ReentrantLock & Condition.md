@@ -1,4 +1,4 @@
-### 浅析ReentrantLock ###
+### 浅析ReentrantLock & Condition ###
 ***
 ### 一、ReentrantLock概述 ###
 
@@ -586,19 +586,370 @@ unlock内部使用Sync的release(int arg)释放锁，而release(int arg)是在AQ
 
 ### 三、说说Condition ###
 
+#### （一）、Condition概述 ####
+
 Condition主要是为了在J.U.C框架中提供和Java传统的监视器风格的wait，notify和notifyAll方法类似的功能。**JDK的官方解释如下**：条件（也称为条件队列 或条件变量）为线程提供了一个含义，以便在某个状态条件现在可能为 true 的另一个线程通知它之前，一直挂起该线程（即让其“等待”）。因为访问此共享状态信息发生在不同的线程中，所以它必须受保护，因此要将某种形式的锁与该条件相关联。等待提供一个条件的主要属性是：以原子方式 释放相关的锁，并挂起当前线程，就像 Object.wait 做的那样。 （Condition实质上是被绑定到一个锁上，这也是为什么将ReentrantLock放在一起分析的原因。）
 
+下图是网上摘抄的关于Condition与Object的监视器方法的对比：
 
-http://blog.csdn.net/chenssy/article/details/69279356
+![](http://img.blog.csdn.net/20170405182049570?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvY2hlbnNzeQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
-http://blog.csdn.net/wojiushiwo945you/article/details/42239113
-
-http://blog.csdn.net/coslay/article/details/45217069
-
-http://www.cnblogs.com/go2sea/p/5630355.html
+Condition提供了一系列的方法来对阻塞和唤醒线程：
 
 
-到这里我们该告一段落了，我们不难发现，ReentrantLock底层实现基本上都是在AQS基础上完成的，所以如果你对AQS不甚了解建议还是回过头来看下前面的 [《浅析Unsafe & CAS & AQS》](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Unsafe%20%26%20CAS%20%26%20AQS.md) 。
+
+- await() ：造成当前线程在接到信号或被中断之前一直处于等待状态。
+- await(long time, TimeUnit unit) ：造成当前线程在接到信号、被中断或到达指定等待时间之前一直处于等待状态。
+- awaitNanos(long nanosTimeout) ：造成当前线程在接到信号、被中断或到达指定等待时间之前一直处于等待状态。返回值表示剩余时间，如
+- 在nanosTimesout之前唤醒，那么返回值 = nanosTimeout - 消耗时间，如果返回值 <= 0 ,则可以认定它已经超时了。
+- awaitUninterruptibly() ：造成当前线程在接到信号之前一直处于等待状态。【注意：该方法对中断不敏感】。
+- awaitUntil(Date deadline) ：造成当前线程在接到信号、被中断或到达指定最后期限之前一直处于等待状态。如果没有到指定时间就被通知，则返回true，否则表示到了指定时间，返回返回false。
+- signal()：唤醒一个等待线程。该线程从等待方法返回前必须获得与Condition相关的锁。
+- signalAll()：唤醒所有等待线程。能够从等待方法返回的线程必须获得与Condition相关的锁。
+
+Condition是一种广义上的条件队列。他为线程提供了一种更为灵活的等待/通知模式，线程在调用await方法后执行挂起操作，直到线程等待的某个条件为真时才会被唤醒。Condition必须要配合锁一起使用，因为对共享状态变量的访问发生在多线程环境下。一个Condition的实例必须与一个Lock绑定，因此Condition一般都是作为Lock的内部实现。
+
+**使用示例：**
+
+
+
+	/**
+	 * 生产者、消费者示例
+	 */
+	public class ConditionTest {
+	    private int storage;
+	    private int putCounter;
+	    private int getCounter;
+	    private Lock lock = new ReentrantLock();
+	    private Condition putCondition = lock.newCondition();
+	    private Condition getCondition = lock.newCondition();
+	
+	    public void put() throws InterruptedException {
+	        try {
+	            lock.lock();
+	            if (storage > 0) {
+	                putCondition.await();
+	            }
+	            storage++;
+	            System.out.println("put => " + ++putCounter );
+	            getCondition.signal();
+	        } finally {
+	            lock.unlock();
+	        }
+	    }
+	
+	    public void get() throws InterruptedException {
+	        try {
+	            lock.lock();
+	            lock.lock();
+	            if (storage <= 0) {
+	                getCondition.await();
+	            }
+	            storage--;
+	            System.out.println("get  => " + ++getCounter);
+	            putCondition.signal();
+	        } finally {
+	            lock.unlock();
+	            lock.unlock();
+	        }
+	    }
+	
+	    public class PutThread extends Thread {
+	        @Override
+	        public void run() {
+	            for (int i = 0; i < 100; i++) {
+	                try {
+	                    put();
+	                } catch (InterruptedException e) {
+	                }
+	            }
+	        }
+	    }
+	
+	    public class GetThread extends Thread {
+	        @Override
+	        public void run() {
+	            for (int i = 0; i < 100; i++) {
+	                try {
+	                    get();
+	                } catch (InterruptedException e) {
+	                }
+	            }
+	        }
+	    }
+	
+	    public static void main(String[] args) {
+	        final ConditionTest test = new ConditionTest();
+	        Thread put = test.new PutThread();
+	        Thread get = test.new GetThread();
+	        put.start();
+	        get.start();
+	    }
+
+
+
+#### （二）、Condition源码分析 ####
+
+一个Condition的实例必须跟一个Lock绑定。获取一个Condition必须要通过Lock的newCondition()方法。该方法定义在接口Lock下面，返回的结果是绑定到此 Lock 实例的新 Condition 实例。Condition为一个接口，其下仅有一个实现类ConditionObject，由于Condition的操作需要获取相关的锁，而AQS则是同步锁的实现基础，所以ConditionObject则定义为AQS的内部类。每个Condition对象都包含着一个FIFO队列，该队列是Condition对象通知/等待功能的关键。在队列中每一个节点都包含着一个线程引用，该线程就是在该Condition对象上等待的线程。我们看ConditionObject的定义就明白了（其实在AQS中已经讲到过，这里不妨在加深下）：
+
+	public class ConditionObject implements Condition, java.io.Serializable {
+	    private static final long serialVersionUID = 1173984872572414699L;
+	
+	    //头节点
+	    private transient Node firstWaiter;
+	    //尾节点
+	    private transient Node lastWaiter;
+	
+	    public ConditionObject() {
+	    }
+	
+	    /** 省略方法 **/
+	}
+
+
+
+![](http://img.blog.csdn.net/20141229154506727?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd29qaXVzaGl3bzk0NXlvdQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+Node里面包含了当前线程的引用。Node定义与AQS的CLH同步队列的节点使用的都是同一个类（AbstractQueuedSynchronized.Node静态内部类），在分析核心函数之前，我们有必要复习下Node状态相关知识：
+
+![](http://img.blog.csdn.net/20141229155010366?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd29qaXVzaGl3bzk0NXlvdQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+Node的各个状态的主要作用：Cancelled主要是解决线程在持有锁时被外部中断的逻辑，AQS的可中断锁获取方法lockInterrutible()是基于该状态实现的。显式锁必须手动释放锁，尤其是有中断的环境中，一个线程被中断可能仍然持有锁，所以必须注意在finally中unlock。Condition则是支持条件队列的等待操作，是Lock与条件队列关联的基础。Signal是阻塞后继线程的标识，一个等待线程只有在其前驱节点的状态是SIGNAL时才会被阻塞，否则一直执行自旋尝试操作，以减少线程调度的开销。
+
+
+该了解的知识普及完了，该进入正题了。JUC锁 AQS中，我们了解到AQS有一个队列，同样Condition也有一个等待队列，两者是相对独立的队列，因此一个Lock可以有多个Condition，Lock(AQS)的队列主要是阻塞线程的，而Condition的队列也是阻塞线程，但是它是有阻塞和通知解除阻塞的功能 Condition阻塞时会释放Lock的锁，阻塞、解除阻塞流程请看下面的Condition的await()、signal、signalAll方法。
+
+**1.等待——await方法**
+
+调用Condition的await()方法会使当前线程进入等待状态，同时会加入到Condition等待队列同时释放锁。当从await()方法返回时，当前线程一定是获取了Condition相关连的锁。
+
+	public final void await() throws InterruptedException {
+	    // 1.如果当前线程被中断，则抛出中断异常
+	    if (Thread.interrupted())
+	        throw new InterruptedException();
+	    // 2.将当前线程加入到Condition队列中去，这里如果lastWaiter是cancel状态，那么会把它踢出Condition队列。
+	    Node node = addConditionWaiter();
+	    // 3.调用tryRelease，释放当前线程的锁
+	    long savedState = fullyRelease(node);
+	    int interruptMode = 0;
+	    // 4.为什么会有在AQS的等待队列的判断？
+	    // 解答：signal操作会将Node从Condition队列中拿出并且放入到等待队列中去，在不在AQS等待队列就看signal是否执行了
+	    // 如果不在AQS等待队列中，就park当前线程，如果在，就退出循环，这个时候如果被中断，那么就退出循环
+	    while (!isOnSyncQueue(node)) {
+	        LockSupport.park(this);
+	        if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+	            break;
+	    }
+	    // 5.这个时候线程已经被signal()或者signalAll()操作给唤醒了，退出了4中的while循环
+	    // 自旋等待尝试再次获取锁，调用acquireQueued方法
+	    if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
+	        interruptMode = REINTERRUPT;
+	    if (node.nextWaiter != null)
+			//清除条件队列中所有状态不为Condition的节点
+	        unlinkCancelledWaiters();
+	    if (interruptMode != 0)
+	        reportInterruptAfterWait(interruptMode);
+	}
+
+
+
+	//加入条件队列（addConditionWaiter()）
+	  private Node addConditionWaiter() {
+	        Node t = lastWaiter;    //尾节点
+	        //Node的节点状态如果不为CONDITION，则表示该节点不处于等待状态，需要清除节点
+	        if (t != null && t.waitStatus != Node.CONDITION) {
+	            //清除条件队列中所有状态不为Condition的节点
+	            unlinkCancelledWaiters();
+	            t = lastWaiter;
+	        }
+	        //当前线程新建节点，状态CONDITION
+	        Node node = new Node(Thread.currentThread(), Node.CONDITION);
+	        /**
+	         * 将该节点加入到条件队列中最后一个位置
+	         */
+	        if (t == null)
+	            firstWaiter = node;
+	        else
+	            t.nextWaiter = node;
+	        lastWaiter = node;
+	        return node;
+	    }
+
+
+
+	//fullyRelease(Node node)，负责释放该线程持有的锁。
+	 final long fullyRelease(Node node) {
+	        boolean failed = true;
+	        try {
+	            //节点状态--其实就是持有锁的数量
+	            long savedState = getState();
+	            //释放锁
+	            if (release(savedState)) {
+	                failed = false;
+	                return savedState;
+	            } else {
+	                throw new IllegalMonitorStateException();
+	            }
+	        } finally {
+	            if (failed)
+	                node.waitStatus = Node.CANCELLED;
+	        }
+	    }
+
+
+	
+	final boolean isOnSyncQueue(Node node) {
+	        //状态为Condition，获取前驱节点为null，返回false
+	        if (node.waitStatus == Node.CONDITION || node.prev == null)
+	            return false;
+	        //后继节点不为null，肯定在CLH同步队列中
+	        if (node.next != null)
+	            return true;
+	
+	        return findNodeFromTail(node);
+	    }
+
+
+	  //unlinkCancelledWaiters()：负责将条件队列中状态不为Condition的节点删除
+	  private void unlinkCancelledWaiters() {
+	            Node t = firstWaiter;
+	            Node trail = null;
+	            while (t != null) {
+	                Node next = t.nextWaiter;
+	                if (t.waitStatus != Node.CONDITION) {
+	                    t.nextWaiter = null;
+	                    if (trail == null)
+	                        firstWaiter = next;
+	                    else
+	                        trail.nextWaiter = next;
+	                    if (next == null)
+	                        lastWaiter = trail;
+	                }
+	                else
+	                    trail = t;
+	                t = next;
+	            }
+	        }
+
+
+
+整个await的过程如下： 
+　　
+
+- 1.将当前线程加入Condition锁队列。特别说明的是，这里不同于AQS的队列，这里进入的是Condition的FIFO队列。进行2。 
+- 2.释放锁。这里可以看到将锁释放了，否则别的线程就无法拿到锁而发生死锁。进行3。 
+- 3.自旋(while)挂起，直到被唤醒或者超时或者CACELLED等。进行4。 
+- 4.获取锁(acquireQueued)。并将自己从Condition的FIFO队列中释放，表明自己不再需要锁（我已经拿到锁了）。
+
+可以看到，这个await的操作过程和Object.wait()方法是一样，只不过await()采用了Condition队列的方式实现了Object.wait()的功能。
+
+
+**2.唤醒——signal和signalAll方法**
+
+await*()清楚了，现在再来看signal/signalAll就容易多了。按照signal/signalAll的需求，就是要将Condition.await()中FIFO队列中第一个Node唤醒（或者全部Node）唤醒。尽管所有Node可能都被唤醒，但是要知道的是仍然只有一个线程能够拿到锁，其它没有拿到锁的线程仍然需要自旋等待，就上上面提到的第4步(acquireQueued)。
+
+
+	public final void signal() {
+	    if (!isHeldExclusively())
+	        throw new IllegalMonitorStateException();
+	    Node first = firstWaiter;
+	    if (first != null)
+	        doSignal(first);
+	}
+
+这里先判断当前线程是否持有锁，如果没有持有，则抛出异常，然后判断整个condition队列是否为空，不为空则调用doSignal方法来唤醒线程，看看doSignal方法都干了一些什么：
+
+	private void doSignal(Node first) {
+	    do {
+	        if ( (firstWaiter = first.nextWaiter) == null)
+	            lastWaiter = null;
+	        first.nextWaiter = null;
+	    } while (!transferForSignal(first) &&
+	             (first = firstWaiter) != null);
+	}
+
+上面的代码很容易看出来，signal就是唤醒Condition队列中的第一个非CANCELLED节点线程，而signalAll就是唤醒所有非CANCELLED节点线程。当然了遇到CANCELLED线程就需要将其从FIFO队列中剔除。
+
+	final boolean transferForSignal(Node node) {
+	    /*
+	     * 设置node的waitStatus：Condition->0
+	     */
+	    if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
+	        return false;
+	
+	    /*
+	     * 加入到AQS的等待队列，让节点继续获取锁
+	     * 设置前置节点状态为SIGNAL
+	     */
+	    Node p = enq(node);
+	    int c = p.waitStatus;
+	    if (c > 0 || !compareAndSetWaitStatus(p, c, Node.SIGNAL))
+	        LockSupport.unpark(node.thread);
+	    return true;
+	}
+
+
+
+signalAll和signal方法类似，主要的不同在于它不是调用doSignal方法，而是调用doSignalAll方法：
+
+	private void doSignalAll(Node first) {
+	    lastWaiter = firstWaiter  = null;
+	    do {
+	        Node next = first.nextWaiter;
+	        first.nextWaiter = null;
+	        transferForSignal(first);
+	        first = next;
+	    } while (first != null);
+	}
+
+这个方法就相当于把Condition队列中的所有Node全部取出插入到等待队列中去。
+
+
+
+3.归纳总结：
+
+
+![](http://img.blog.csdn.net/20141229155633393?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd29qaXVzaGl3bzk0NXlvdQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
+
+- AQS等待队列与Condition队列是两个相互独立的队列 
+- await()就是在当前线程持有锁的基础上释放锁资源，并新建Condition节点加入到Condition的队列尾部，阻塞当前线程 
+- signal()就是将Condition的头节点移动到AQS等待节点尾部，让其等待再次获取锁
+
+
+
+
+以下是AQS队列和Condition队列的出入结点的示意图，可以通过这几张图看出线程结点在两个队列中的出入关系和条件。
+
+**I.初始化状态：**AQS等待队列有3个Node，Condition队列有1个Node(也有可能1个都没有)
+
+![](http://img.blog.csdn.net/20150423091636088)
+
+**II.节点1执行Condition.await()** 
+
+
+- 1.将head后移 
+- 2.释放节点1的锁并从AQS等待队列中移除 
+- 3.将节点1加入到Condition的等待队列中 
+- 4.更新lastWaiter为节点1
+
+![](http://img.blog.csdn.net/20150423091555989)
+
+**III.节点2执行signal()操作**
+
+- 5.将firstWaiter后移 
+- 6.将节点4移出Condition队列 
+- 7.将节点4加入到AQS的等待队列中去 
+- 8.更新AQS的等待队列的tail
+
+![](http://img.blog.csdn.net/20150423091621011)
+
+
+总而言之，一个线程获取锁后，通过调用Condition的await()方法，会将当前线程先加入到条件队列中，然后释放锁，最后通过isOnSyncQueue(Node node)方法不断自检看节点是否已经在CLH同步队列了，如果是则尝试获取锁，否则一直挂起。当线程调用signal()方法后，程序首先检查当前线程是否获取了锁，然后通过doSignal(Node first)方法唤醒CLH同步队列的首节点。被唤醒的线程，将从await()方法中的while循环中退出来，然后调用acquireQueued()方法竞争同步状态。
+
+
+到这里我们该告一段落了，我们不难发现，ReentrantLock和Condition底层实现基本上都是在AQS基础上完成的，所以如果你对AQS不甚了解建议还是回过头来看下前面的 [《浅析Unsafe & CAS & AQS》](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Unsafe%20%26%20CAS%20%26%20AQS.md) 。
 
 
 
