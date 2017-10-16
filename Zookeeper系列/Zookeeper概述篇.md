@@ -82,7 +82,7 @@ Watcher（事件监听器），是Zookeeper中的一个很重要的特性。Zook
 
 Zookeeper采用ACL（Access Control Lists）策略来进行权限控制，类似于UNIX文件系统的权限控制。Zookeeper定义了如下5种权限：
 
-		  · CREATE：创建子节点的权限。
+		· CREATE：创建子节点的权限。
 	
 	　　　　· READ：获取节点数据和子节点列表的权限。
 	
@@ -179,8 +179,6 @@ Paxos算法是莱斯利·兰伯特（英语：Leslie Lamport，LaTeX中的「La�
 
 根据前面的内容讲解，我们已经基本上了解了Paxos算法的核心逻辑。下面我们再来看Paxos算法在实际运作过程中的一些细节。假设存在这样一种极端情况，有两个Proposer依次提出了一些列编号递增的议案，但是最终都无法被选定，具体流程如下：
 
-![](http://upload-images.jianshu.io/upload_images/1752522-0fab48ed2bdf358a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&_=6253479)
-
 proposer1提出了一个编号为M1的提案，然后完成了上述阶段一的流程，但与此同时，另外一个proposer2提出了一个编号为M2（M2>M1）的提案，同样也完成了阶段一的流程，于是acceptor已经承诺不再接受编号小于M2的提案，因此，当proposer1进入阶段二时，其发出的accept请求将被acceptor忽略，于是proposer1又再次进入阶段一并提出了一个编号为M3（M3>M2）的提案，而这又导致proposer2在第二阶段的accept请求被忽略，以次类推，提议的确定过程将陷入死循环。如图所示：
 
 ![](https://i.imgur.com/JfiodU2.png)
@@ -222,12 +220,12 @@ proposer1提出了一个编号为M1的提案，然后完成了上述阶段一的
 
 
 
-***ZAB协议的核心***是定义了对于那些会改变Zookeeper服务器数据状态的事务请求的处理方式，即：所有事务请求必须由一个全局唯一的服务器来协调处理，这样的服务器被称为Leader服务器，而余下的其他服务器则称为Follower服务器。Leader服务器负责将一个客户端事务请求转化成一个事务Proposal（提议），并将该Proposal分发给集群中所有的Follower服务器，之后Leader服务器需要等待所有Follower服务器的反馈，一旦超过半数的Follower服务器进行了正确的反馈后，那么Leader就会再次向所有的Follower服务器分发Commit消息，要求其将前一个Proposal进行提交。
+ZAB协议的核心是定义了对于那些会改变Zookeeper服务器数据状态的事务请求的处理方式，即：所有事务请求必须由一个全局唯一的服务器来协调处理，这样的服务器被称为Leader服务器，而余下的其他服务器则称为Follower服务器。Leader服务器负责将一个客户端事务请求转化成一个事务Proposal（提议），并将该Proposal分发给集群中所有的Follower服务器，之后Leader服务器需要等待所有Follower服务器的反馈，一旦超过半数的Follower服务器进行了正确的反馈后，那么Leader就会再次向所有的Follower服务器分发Commit消息，要求其将前一个Proposal进行提交。
 
 
 **2.ZAB协议介绍**
 
-ZAB协议包括两种基本的模式：分别是***崩溃恢复***和***消息广播***。
+ZAB协议包括两种基本的模式：分别是***崩溃恢复和消息广播***。
 
 
 
