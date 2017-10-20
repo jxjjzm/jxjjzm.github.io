@@ -238,9 +238,9 @@ Zookeeper的4种构造方法：
 
 #### 2.主要方法 ####
 
-![](https://i.imgur.com/txu8vcb.png)
+![](https://i.imgur.com/uEW7tQ0.png)
 
-这里仅列举出了zookeeper API比较常用的几个方法，更详细的介绍请参考： [API DOCS](http://zookeeper.apache.org/doc/r3.4.8/api/index.html)
+详细请参考： [API DOCS](http://zookeeper.apache.org/doc/r3.4.8/api/index.html)
 
 #### （1）创建节点 ####
 
@@ -271,20 +271,228 @@ Java客户端可以通过ZooKeeper的API来创建一个数据节点，有如下�
 
 ![](https://i.imgur.com/cew00la.png)
 
+需要注意：
+
+- 在ZooKeeper中，只允许删除叶子节点。也就是说，如果一个节点存在至少一个子节点的话，那么该节点将无法被直接删除，必须先删除掉其所有子节点。
 
 #### （3）读取数据 ####
 
+I、getChildren
+
+Java客户端可以通过Zookeeper的API来获取一个节点的所有子节点，有如下接口可供使用：
+
+	List<String> getChildren(final String path,Watcher watcher)
+	List<String> getChildren(final String path,boolean watch)
+	void getChildren(final String path,Watcher watcher,ChildrenCallback cb,Object ctx)
+	void getChildren(final String path,boolean watch,ChildrenCallback cb,Object ctx)
+	List<String> getChildren(final String path,Watcher watcher,Stat stat)
+	List<String> getChildren(final String path,boolean watch,Stat stat)
+	void getChildren(final String path,Watcher watcher,Children2Callback cb,Object ctx)
+	void getChildren(final String path,boolean watch,Children2Callback cb,Object ctx)
+
+![](https://i.imgur.com/HtT3Yko.png)
+![](https://i.imgur.com/lCCTepd.png)
+
+需要注意：
+
+
+- Watcher通知是一次性的，即一旦触发一次通知后，该Watcher就失效了，因此客户端需要反复注册Watcher
+
+
+II、getData
+
+客户端可以通过Zookeeper的API来获取一个节点的数据内容，有如下接口:
+
+	byte[] getData(final String path,Watcher watcher,Stat stat)
+	byte[] getData(final String path,boolean watch,Stat stat)
+	void getData(final String path,Watcher watcher,DataCallback cb,Object ctx)
+	void getData(final String path,boolean watche,DataCallback cb,Object ctx)
+
+![](https://i.imgur.com/eSUmues.png)
+
+#### （4）更新数据 ####
+
+客户端可以通过Zookeeper的API来更新一个节点的数据内容，有如下接口：
+
+	Stat setData(final String path,byte data[],int version)
+	void setData(final String path,byte data[],int version,StatCallback cb,Object ctx)
+
+![](https://i.imgur.com/xaJzasw.png)
+
+#### （5）检测节点是否存在 ####
+
+客户端可以通过Zookeeper的API来检测指定节点是否存在，有如下接口：
+
+	public Stat exists(final String path,Watcher watcher)
+	public Stat exists(final String path,boolean watch)
+	public void exists(final String path,Watcher watcher,StatCallback cb,Object ctx)
+	public void exists(final String path,boolean watch,StatCallback cb,Object ctx)
+
+![](https://i.imgur.com/ZQm1zKm.png)
+
+需要注意：
+
+
+
+- 无论指定节点是否存在，通过调用exists接口都可以注册Watcher。
+- exists接口中注册的Watcher,能够对节点创建、节点删除和节点数据更新事件进行监听。
+- 对于指定节点的子节点的各种变化，都不会通知客户端。
+
+#### （6）权限控制 ####
+
+开发人员如果要使用Zookeeper的权限控制功能，需要在完成Zookeeper会话创建后，给该会话添加相关的权限信息（AuthInfo）。Zookeeper客户端提供了相应的API接口来进行权限信息的设置。
+
+	addAuthInfo(String name,byte[] auth)
+
+该接口主要用于为当前Zookeeper会话添加权限信息，之后凡是通过该会话对Zookeeper服务端进行的任何操作，都会带上该权限信息。
 
 
 
 
+### 四、开源客户端 ###
+
+（一）、ZkClient
+
+ZkClient是Github上一个开源的Zookeeper客户端，ZkClient是在Zookeeper原生API接口之上进行了包装，是一个更易用的Zookeeper客户端。同时，zkClient在内部实现了诸如Session超时重连、Watcher反复注册等功能，使得Zookeeper客户端的这些繁琐的细节工作对开发人员透明。
+
+  		<dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>${zkclient.version}</version>
+        </dependency>
 
 
 
+ZKclient源码请参考： [zkclient](https://github.com/sgroschupf/zkclient)
 
+ZKclient API请参考： [ZkClient API](http://helix.apache.org/apidocs/reference/org/apache/helix/manager/zk/ZkClient.html)
+
+（二）、Curator
+
+Curator是Netflix公司开源的一套Zookeeper客户端框架，现已成为Apache的顶级项目，是全世界范围内使用最广泛的Zookeeper客户端之一———— Guava is to Java What Curator is to Zookeeper。
+
+<!-- https://mvnrepository.com/artifact/org.apache.curator/apache-curator -->
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+
+- Curator解决了很多Zookeeper客户端非常底层的细节开发工作，包括连接重连，反复注册Watcher和NodeExistsException异常等。
+- Curator还在Zookeeper原生API的基础上进行了包装，提供了一套易用性和可读性更强的Fluent风格的客户端API框架。
+- Curator中还提供了Zookeeper各种应用场景（Recipe，如时间监听、Master选举、分布式锁、分布式计数器、分布式Barrier等）的抽象封装。这些使用参考都在recipes包中，读者需要单独依赖以下Maven依赖来获取:
+
+		<dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+
+
+
+- Curator也提供了很多工具类，其中用的最多的就是ZKPaths和EnsurePath和TestingServer —— ZKPaths提供了一些简单的API来构建ZNode路径、递归创建和删除节点等；EnsurePath提供了一种能够确保数据节点存在的机制，多用于这样的业务：上层业务希望对一个数据节点进行一些操作，但是操作之前需要确保该节点存在；TestingServer允许开放人员非常方便地启动一个标准的Zookeeper服务器，并以此来进行一系列的单元测试（便于开发人员进行Zookeeper的开发与测试）。TestingServer在Curator的test包中，读者需要单独依赖一下Maven依赖来获取：
+
+		<dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+
+
+Curator源码请参考：[curator](https://github.com/jxjjzm/curator)
+
+Curator API请参考：[curator API](http://curator.apache.org/apidocs/index.html)
+
+
+总结：不管是ZKclient，还是Curator，由于底层实现还是对Zookeeper原生API的包装，因此本节中不会太过详细地进行阐述。具体使用个人推荐一篇博文，请参考：[Zookeeper使用--开源客户端](http://www.cnblogs.com/leesf456/p/6032716.html)
+	  
 
 
 ### 四、Zookeeper的典型应用场景 ###
+
+Zookeeper是一个典型的发布/订阅模式的分布式数据管理与协调框架，开发人员可以使用它来进行分布式数据的发布与订阅。另一方面，通过对Zookeeper中丰富的数据节点类型进行交叉使用，配合Watcher事件通知机制，可以非常方便地构建一系列分布式应用中都会涉及的核心功能，如数据发布/订阅、负载均衡、命名服务、分布式协调/通知、集群管理、Master选举、分布式锁和分布式队列等。
+
+#### （一）数据发布/订阅 ####
+
+数据发布/订阅（Publish/Subscribe）系统，即所谓的配置中心，顾名思义就是发布者将数据发布到Zookeeper的一个或一系列节点上，供订阅者进行数据订阅，进而达到动态获取数据的目的，实现配置信息的集中式管理和数据的动态更新。
+
+发布/订阅系统一般有两种设计模式，分别是推（Push）模式和拉（Pull）模式。在推模式中，服务端主动将数据更新发送给所有订阅的客户端；而拉模式则是由客户端主动发起请求来获取最新数据，通常客户端都采用定时进行轮询拉取的方式。***Zookeeper采用的是推拉相结合的方式:客户端向服务端注册自己需要关注的节点，一旦该节点的数据发生变更，那么服务端就会向相应的客户端发送Watcher事件通知，客户端接收到这个消息通知之后，需要主动到服务端获取最新的数据。***
+
+在我们平常的应用系统开发中，经常会碰到这样的需求：系统中需要使用一些通用的配置信息，例如机器列表信息、运行时的开关配置、数据库配置信息等。这些全局配置信息通常具备以下3个特性。
+
+- 数据量通常比较小。
+- 数据内容在运行时会发生动态变化。
+- 集群中各机器共享，配置一致。
+
+对于这类配置信息，一般的做法通常可以选择将其存储在本地配置文件或是内存变量中。无论采用哪种方式，其实都可以简单地实现配置管理。如果采取本地配置文件的方式，那么通常系统可以在应用启动的时候读取到本地磁盘的一个文件来进行初始化，并且在运行过程中定时地进行文件的读取，以此来检测文件内容的变更。另外一种借助内存变量来实现配置管理的方式也非常简单，以Java系统为例，通常可以采用JMX方式来实现对系统运行时内存变量的更新。在集群机器规模不大、配置变更不是特别频繁的情况下，无论上面提到的哪种方式，都能够非常方便地解决配置管理的问题。但是，一旦机器规模变大且配置信息变更越来越频繁后，我们发现依靠现有的这两种方式解决配置管理就变得越来越困难了。我们既希望能够快速地做到全局配置信息的变更，同时希望变更成本足够小，因此我们必须寻求一种更为分布式化的解决方案。Zookeeper可以用来实现类似这种场景的配置管理 ———— ***如果将配置信息存放到Zookeeper上进行集中管理，那么通常情况下，应用在启动的时候都会主动到Zookeeper服务端上进行一次配置信息的获取，同时，在指定节点上注册一个Watcher监听，这样一来，但凡配置信息发生变更，服务端都会实时通知到所有订阅的客户端，从而达到实时获取最新配置信息的目的。***
+
+#### （二）负载均衡 ####
+
+负载均衡是一种相当常见的计算机网络技术，用来对多个计算机、网络连接、CPU、磁盘驱动或其他资源进行分配负载，以达到优化资源使用、最大化吞吐率、最小化响应时间和避免过载的目的。
+
+例如：使用Zookeeper实现动态DNS服务
+
+- 域名配置，首先在Zookeeper上创建一个节点来进行域名配置，如DDNS/app1/server.app1.company1.com。
+- 域名解析，应用首先从域名节点中获取IP地址和端口的配置，进行自行解析。同时，应用程序还会在域名节点上注册一个数据变更Watcher监听，以便及时收到域名变更的通知。
+- 域名变更，若发生IP或端口号变更，此时需要进行域名变更操作，此时，只需要对指定的域名节点进行更新操作，Zookeeper就会向订阅的客户端发送这个事件通知，客户端之后就再次进行域名配置的获取。
+
+
+#### （三）命名服务 ####
+
+命名服务（Name Service）也是分布式系统中比较常见的一类场景，在分布式系统中，被命名的实体通常可以是集群中的机器、提供的服务地址或远程对象等 ———— 这些我们都可以统称它们为名字（Name），其中较为常见的就是一些分布式服务框架（如RPC、RMI）中的服务地址列表，通过使用命名服务，客户端应用能够根据指定名字来获取资源的实体、服务地址和提供者的信息等。
+
+Zookeeper可以实现一套分布式全局唯一ID（所谓ID就是一个能够唯一标识某个对象的标识符）的分配机制。
+
+![](http://images2015.cnblogs.com/blog/616953/201611/616953-20161111191903983-1360060273.png)
+
+通过调用Zookeeper节点创建的API接口可以创建一个顺序节点，并且在API返回值中会返回这个节点的完整名字，利用这个特性，我们就可以借助Zookeeper来生成全局唯一的ID了，其步骤如下：
+
+
+
+- 1）. 客户端根据任务类型，在指定类型的任务下通过调用接口创建一个顺序节点，如"job-"。
+- 2）. 创建完成后，会返回一个完整的节点名，如"job-00000001"。
+- 3）. 客户端拿到这个返回值后，拼接上type类型和返回值后，就可以作为全局唯一ID了，如"type2-job-00000001"。
+
+#### （四）分布式协调/通知 ####
+
+分布式协调/通知服务是分布式系统中不可缺少的一个环节，是将不同的分布式组件有机结合起来的关键所在。对于一个在多台机器上部署运行的应用而言，通常需要一个协调者（Coordinator）来控制整个系统的运行流程，例如分布式事务的处理、机器间的互相协调等。同时，引入这样一个协调者，便于将分布式协调的职责从应用中分离出来，从而可以大大减少系统之间的耦合性，而且能够显著提高系统的可扩展性。
+
+Zookeeper中特有的Watcher注册于异步通知机制，能够很好地实现分布式环境下不同机器，甚至不同系统之间的协调与通知，从而实现对数据变更的实时处理。通常的做法是不同的客户端都对Zookeeper上的同一个数据节点进行Watcher注册，监听数据节点的变化（包括节点本身和子节点），若数据节点发生变化，那么所有订阅的客户端都能够接收到相应的Watcher通知，并作出相应处理。
+
+在绝大多数分布式系统中，系统机器间的通信无外乎***心跳检测、工作进度汇报和系统调度***。
+
+- ① 心跳检测 ———— 机器间的心跳检测机制是指在分布式环境中，不同机器间需要检测到彼此是否在正常运行。在传统的开发中我们通常是通过主机之间是否可以相互PING通来判断，更复杂一点的话，则会通过在机器之间建立长连接，通过TCP连接固有的心跳检测机制来实现上层机器的心跳检测，这些确实都是一些非常常见的心跳检测方法。Zookeeper也可以用来实现机器间的心跳检测，基于Zookeeper临时节点特性（临时节点的生存周期是客户端会话，客户端若当即后，其临时节点自然不再存在），可以让不同机器都在Zookeeper的一个指定节点下创建临时子节点，不同的机器之间可以根据这个临时子节点来判断对应的客户端机器是否存活。通过这种方式检测系统和被检测系统之间并不需要直接相关联，而是通过Zookeeper上的某个节点进行关联，大大减少了系统耦合。
+
+- ② 工作进度汇报 ———— 在一个常见的任务分发系统中，通常任务被分发到不同机器上执行后，需要实时地将自己的任务执行进度汇报给分发系统。这个时候就可以通过Zookeeper来实现，在Zookeeper上选择一个节点，每个任务客户端都在这个节点下面创建临时子节点，这样不仅可以判断机器是否存活，同时各个任务机器可以实时地将自己的任务执行进度写到该临时节点中去，以便中心系统能够实时获取任务的执行进度。
+
+- ③ 系统调度 ———— Zookeeper能够实现如下系统调度模式：一个分布式系统由控制台和一些客户端系统两部分组成，控制台的职责就是需要将一些指令信息发送给所有的客户端，以控制他们进行相应的业务逻辑，后台管理人员在控制台上做的一些操作，实际上就是修改了Zookeeper上某些节点的数据，而Zookeeper进一步把这些数据变更以事件通知的形式发送给了对应的订阅客户端。
+
+总之，使用Zookeeper来实现分布式系统机器间的通信，不仅能省去大量底层网络通信和协议设计上重复的工作，更为重要的一点是大大降低了系统之间的耦合，能够非常方便地实现异构系统之间的灵活通信。
+
+
+#### （五）集群管理 ####
+
+
+
+
+
+
+#### （六）Master选举 ####
+
+
+
+
+
+#### （七）分布式锁 ####
+
+
+
+
+
+#### （八）分布式队列 ####
+
+
+
 
 
 
