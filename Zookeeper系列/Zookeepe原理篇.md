@@ -5,13 +5,22 @@
 
 下面我们将从数据模型、节点特性、版本、Watcher和ACL五个方面来讲述Zookeeper的系统模型。
 
-![](https://i.imgur.com/ABzDzP5.png)
 
 #### 1.数据模型 ####
 
 Zookeeper的视图结构和标准的Unix文件系统非常类似，但没有引入传统文件系统中目录和文件等相关概念，而是使用了其特有的“数据节点”概念，我们称之为ZNode。ZNode是Zookeeper中数据的最小单元，每个ZNode上都可以保存数据，同时还可以挂载子节点，因此构成了一个层次化的命名空间，称为树。
 
-![](https://i.imgur.com/7gH0CxK.jpg)
+![](http://img1.51cto.com/attachment/201211/085951545.png)
+
+节点的路径也是使用典型的、绝对的、斜线分隔的路径样式，没有相对的引用。任何unicode字符都可以被用在路径中，除了下面的限制：
+
+	 1）、路径名中不能包括null（\u0000）字符。（这是因为为了兼容C语言的问题）
+     2）、下面的字符也不能使用，因为不能很好的显示，或者显示不正常：\u0001-\u0019和\u007F-\u009F。
+     3）、下面的字符也不被允许：\ud800-uF8FFF,\uFF0-uFFFF,-uXFFFE-\uXFFFF（这里的X表示1-E）,\uF0000-\uFFFF。
+     4）、点号“.”能作为路径名称的一部分，但是“.”和“..”不能单独用来表示整个路径名称，因为ZooKeeper不使用相对路径。下面的路径也是无效的：“/a/b/./c”or“/a/b/../c”。
+     5）、“zookeeper”也是被保留的关键字，不允许使用。
+
+
 
 **事务ID ———— ZXID ：**
 
@@ -29,11 +38,35 @@ Zookeeper的视图结构和标准的Unix文件系统非常类似，但没有引�
 
 每个数据节点除了存储了数据内容之外，还存储了数据节点本身的一些状态信息，可通过命令get获取：
 
-![](https://i.imgur.com/IssdOD2.png)
+	[zk: 10.1.39.43:4180(CONNECTED) 7] get /hello  
+	world  
+	cZxid = 0x10000042c  
+	ctime = Fri May 17 17:57:33 CST 2013  
+	mZxid = 0x10000042c  
+	mtime = Fri May 17 17:57:33 CST 2013  
+	pZxid = 0x10000042c  
+	cversion = 0  
+	dataVersion = 0  
+	aclVersion = 0  
+	ephemeralOwner = 0x0  
+	dataLength = 5  
+	numChildren = 0  
+
 
 我们可以看到，第一行是当前数据节点的数据内容，从第二行开始就是节点的状态信息了，包括事务ID、版本信息和子节点个数等：
 
-![](https://i.imgur.com/xvH2uRf.png)
+- czxid —— 即Created ZXID，表示该数据节点被创建时的事务ID
+- mzxid —— 即Modified ZXID，表示该节点最后一次被更新时的事务ID
+- ctime —— 即Created Time，表示节点被创建的时间
+- mtime —— 即Modified Time，表示该节点最后一次被更新的时间
+- dataVersion —— 数据节点的版本号（节点数据的更新次数）.
+- cversion —— 子节点的版本号（子节点的更新次数）.
+- aclVersion —— 节点的ACL版本号（节点ACL(授权信息)的更新次数）.
+- ephemeralOwner —— 创建该临时节点的会话的sessionID.(如果该节点为ephemeral节点, ephemeralOwner值表示与该节点绑定的session id. 如果该节点不是ephemeral节点, ephemeralOwner值为0.)
+- dataLength ——  数据内容的长度（节点数据的字节数）.
+- numChildren —— 当前节点的子节点个数.
+- pzxid —— 表示该节点的子节点列表最后一次被修改时的事务ID。（注意，只有子节点列表变更了才会变更pzxid,子节点内容变更不会影响pzxid）
+
 
 
 #### 3.版本 ———— 保证分布式数据原子性操作 ####
@@ -48,11 +81,16 @@ Zookeeper中为数据节点引入了版本的概念，每个数据节点都具�
 
 Zookeeper中的版本概念和传统意义上的软件版本有很大的区别，它表示的是对数据节点的数据内容、子节点列表或是节点ACL信息的修改次数。如：version为1表示对数据节点的内容变更了一次。即使前后两次变更并没有改变数据内容，version的值仍然会改变。version可以用于写入验证，类似于CAS。
 
+![](http://img.blog.csdn.net/20160702113356844)
+
 
 #### 4.Watcher ———— 数据变更的通知 ####
 
+在Zookeeper中，引入了Watcher机制来实现这种分布式的通知功能。Zookeeper允许客户端向服务端注册一个Watcher监听，当服务端的一些指定事件触发了这个Watcher，那么就会向指定客户端发送一个事件通知来实现分布式的通知功能。
 
+![](http://images2015.cnblogs.com/blog/616953/201611/616953-20161122094930487-367521759.png)
 
+　Zookeeper的Watcher机制主要包括客户端线程、客户端WatcherManager、Zookeeper服务器三部分。客户端在向Zookeeper服务器注册的同时，会将Watcher对象存储在客户端的WatcherManager当中。当Zookeeper服务器触发Watcher事件后，会向客户端发送通知，客户端线程从WatcherManager中取出对应的Watcher对象来执行回调逻辑。
 
 #### 5.ACL ———— 保障数据的安全 ####
 
