@@ -965,6 +965,219 @@ Zookeeper服务器的启动，大致可以分为以下五个步骤：配置文�
 
 ### 六、Zookeeper Leader选举 ###
 
+#### 1.Leader选举概述 ####
+
+**I、服务器启动时期的Leader选举**
+
+若进行Leader选举，则至少需要两台机器，这里选取3台机器组成的服务器集群为例。在集群初始化阶段，当有一台服务器Server1启动时，其单独无法进行和完成Leader选举，当第二台服务器Server2启动时，此时两台机器可以相互通信，每台机器都试图找到Leader，于是进入Leader选举过程。选举过程如下:
+
+	　　(1) 每个Server发出一个投票。由于是初始情况，Server1和Server2都会将自己作为Leader服务器来进行投票，每次投票会包含所推举的服务器的myid和ZXID，使用(myid, ZXID)来表示，此时Server1的投票为(1, 0)，Server2的投票为(2, 0)，然后各自将这个投票发给集群中其他机器。
+	
+	　　(2) 接受来自各个服务器的投票。集群的每个服务器收到投票后，首先判断该投票的有效性，如检查是否是本轮投票、是否来自LOOKING状态的服务器。
+	
+	　　(3) 处理投票。针对每一个投票，服务器都需要将别人的投票和自己的投票进行PK，PK规则如下
+	
+	　　　　· 优先检查ZXID。ZXID比较大的服务器优先作为Leader。
+	
+	　　　　· 如果ZXID相同，那么就比较myid。myid较大的服务器作为Leader服务器。
+	
+	　　对于Server1而言，它的投票是(1, 0)，接收Server2的投票为(2, 0)，首先会比较两者的ZXID，均为0，再比较myid，此时Server2的myid最大，于是更新自己的投票为(2, 0)，然后重新投票，对于Server2而言，其无须更新自己的投票，只是再次向集群中所有机器发出上一次投票信息即可。
+	
+	　　(4) 统计投票。每次投票后，服务器都会统计投票信息，判断是否已经有过半机器接受到相同的投票信息，对于Server1、Server2而言，都统计出集群中已经有两台机器接受了(2, 0)的投票信息，此时便认为已经选出了Leader。
+	
+	　　(5) 改变服务器状态。一旦确定了Leader，每个服务器就会更新自己的状态，如果是Follower，那么就变更为FOLLOWING，如果是Leader，就变更为LEADING。
+
+
+
+
+
+**II、服务器运行时期的Leader选举**
+
+　在Zookeeper运行期间，Leader与非Leader服务器各司其职，即便当有非Leader服务器宕机或新加入，此时也不会影响Leader，但是一旦Leader服务器挂了，那么整个集群将暂停对外服务，进入新一轮Leader选举，其过程和启动时期的Leader选举过程基本一致。假设正在运行的有Server1、Server2、Server3三台服务器，当前Leader是Server2，若某一时刻Leader挂了，此时便开始Leader选举。选举过程如下:
+
+	　　(1) 变更状态。Leader挂后，余下的非Observer服务器都会将自己的服务器状态变更为LOOKING，然后开始进入Leader选举过程。
+	
+	　　(2) 每个Server会发出一个投票。在运行期间，每个服务器上的ZXID可能不同，此时假定Server1的ZXID为123，Server3的ZXID为122；在第一轮投票中，Server1和Server3都会投自己，产生投票(1, 123)，(3, 122)，然后各自将投票发送给集群中所有机器。
+	
+	　　(3) 接收来自各个服务器的投票。与启动时过程相同。
+	
+	　　(4) 处理投票。与启动时过程相同，此时，Server1将会成为Leader。
+	
+	　　(5) 统计投票。与启动时过程相同。
+	
+	　　(6) 改变服务器的状态。与启动时过程相同。
+
+
+
+#### 2.Leader选举算法分析 ####
+
+在Zookeeper中，提供了三种Leader选举的算法，分别是LeaderElection、UDP版本的FastLeaderElection和TCP版本的FastLeaderElection，可以通过在配置文件zoo.cfg中使用electionAlg属性来指定，分别使用数字0～3表示。0代表LeaderElection，这是一种纯UDP实现的Leader选举算法；1代表UDP版本的FastLeaderElection，并且是非授权模式；2也代表UDP版本的FastLeaderElection，但使用授权模式；3代表TCP版本的FastLeaderElection。值得一提的是，从3.4.0版本开始，Zookeeper废弃了0、1和2这三种Leader选举算法，只保留了TCP版本的FastLeaderElection选举算法。下面仅对此算法进行介绍。
+
+首先我们对Zookeeper的Leader选举算法介绍中会出现的一些专有术语进行简单介绍，以便更好地理解Zookeeper的Leader选举算法。
+
+- SID：服务器ID —— SID是一个数字，用来唯一标识一台Zookeeper集群中的机器，每台机器不能重复，和myid的值一致。
+- ZXID:事务ID —— ZXID是一个事务ID，用来唯一标识一次服务器状态的变更。
+- Vote：投票 —— Leader选举，顾名思义必须通过投票来实现。当集群中的机器发现自己无法检测到Leader机器的时候，就开始尝试进行投票。
+- Quorum：过半机器数 —— 指的是Zookeeper集群中过半的机器数，如果集群中总的机器数是n的话，那么 quorum = (n/2 + 1)
+
+#### 1.算法粗略分析 ####
+
+**进入Leader选举**
+
+当Zookeeper集群中的一台服务器出现以下两种情况之一时，就会开始进入Leader选举。
+
+- 服务器初始化启动
+- 服务器运行期间无法和Leader保持连接
+
+而当一台机器进入Leader选举流程时，当前集群也可能会处于以下两种状态。
+
+- 集群中本来就已经存在一个Leader
+- 集群中确实不存在Leader
+
+第一种已经存在Leader的情况一般都是集群中的某一台机器启动得比较晚，在它启动之前，集群已经可以正常工作，即已经存在了一台Leader服务器。针对这种情况，当该机器试图去选举Leader时，会被告知当前服务器的Leader信息，对于该机器而言，仅仅需要和Leader机器建立起连接，并进行状态同步即可。而第二种在集群中不存在Leader情况下则会相对复杂，下面我们来看一下具体是如何进行Leader选举。
+
+（1）**开始第一次投票**。通常有两种情况会导致集群中不存在Leader，一种情况是在整个服务器刚刚初始化启动时，此时尚未产生一台Leader服务器；另一种情况就是在运行期间当前Leader所在的服务器挂了。无论哪种情况导致进行Leader选举，集群的所有机器都处于一种试图选举出一个Leader的状态，即LOOKING状态，LOOKING状态的机器会向集群中所有其他机器发送消息，这个消息称为“投票”。投票消息中包含了两个最基本的信息：所推举的服务器的SID和ZXID，分别表示了被推举服务器的唯一标识和事务ID。下面我们将以“(SID, ZXID)”这样的形式来标识一次投票信息。举例来说，如果当前服务器要推举SID为1、ZXID为8的服务器成为Leader，那么它的这次投票信息可以表示为（1，8）。我们假定Zookeeper由5台机器组成，SID分别为1、2、3、4、5，ZXID分别为9、9、9、8、8，并且此时SID为2的机器是Leader服务器，某一时刻，1、2所在的机器出现故障，因此集群开始进行Leader选举。在第一次投票的时侯，由于还无法检测到集群中其他机器的状态信息，因此每台机器都会将自己作为被推举的对象来进行投票，于是SID为3、4、5的机器投票情况分别为(3, 9)，(4, 8)， (5, 8)。
+
+（2）**变更投票**。集群中的每台机器发出自己的投票后，也会接收到来自集群中其他机器的投票，每台机器都会根据一定规则来处理收到的其他机器的投票，并以此来决定是否需要变更自己的投票，这个规则也是整个Leader选举算法的核心所在。为了便于描述，我们首先定义一些术语：
+
+
+-  vote_sid：接收到的投票中所推举Leader服务器的SID。
+-  vote_zxid：接收到的投票中所推举Leader服务器的ZXID。
+-  self_sid：当前服务器自己的SID。
+-  self_zxid：当前服务器自己的ZXID。
+
+每次对于收到的投票的处理，都是一个对（vote_sid,vote_zxid）和（self_sid,self_zxid）对比的过程。
+
+		
+
+- 规则一：如果vote_zxid大于self_zxid，就认可当前收到的投票，并再次将该投票发送出去。
+- 规则二：如果vote_zxid小于self_zxid，那么坚持自己的投票，不做任何变更。
+- 规则三：如果vote_zxid等于self_zxid，那么就对比两者的SID，如果vote_sid大于self_sid，那么就认可当前收到的投票，并再次将该投票发送出去。
+- 规则四：如果vote_zxid等于self_zxid，并且vote_sid小于self_sid，那么坚持自己的投票，不做任何变更。
+
+根据上面这个规则，给出下面Zookeeper集群的投票变更过程。
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161202213100568-693960760.png)
+
+（3）**确定Leader**。经过第二轮投票后，集群中的每台机器都会再次接收到其他机器的投票，然后开始统计投票，如果一台机器收到了超过半数的相同投票，那么这个投票对应的SID机器即为Leader。此时Server3将成为Leader。
+
+
+简单地说，通常哪台服务器上的数据越新，那么越有可能成为Leader，原因很简单，数据越新，那么它的ZXID也就越大，也就越能够保证数据的恢复。当然，如果集群中有几个服务器具有相同的哦ZXID，那么SID较大的那台服务器成为Leader。 （注意：前提是同一轮投票）
+
+#### 2.Leader选举的实现细节 ####
+
+**I、服务器状态**
+
+为了能够清楚地对Zookeeper集群中每台机器的状态进行标识，在org.apache.zooKeeper.server.quorum.QuorumPeer.ServerState类中列举了4中服务器状态，分别是：LOOKING、FOLLOWING、LEADING和OBSERVING。
+
+- LOOKING：寻找Leader状态。当服务器处于该状态时，它会认为当前集群中没有Leader，因此需要进入Leader选举状态。
+- FOLLOWING：跟随者状态。表明当前服务器角色是Follower。
+- LEADING：领导者状态。表明当前服务器角色是Leader。
+- OBSERVING：观察者状态。表明当前服务器角色是Observer。
+
+**II、投票数据结构**
+
+![](https://i.imgur.com/B6Ird0v.png)
+
+
+- id：被推举的Leader的SID。
+- zxid：被推举的Leader事务ID。
+- electionEpoch：逻辑时钟，用来判断多个投票是否在同一轮选举周期中，该值在服务端是一个自增序列，每次进入新一轮的投票后，都会对该值进行加1操作。
+- peerEpoch：被推举的Leader的epoch。
+- state：当前服务器的状态。
+
+**III、QuorumCnxManager:网络IO**
+
+每台服务器在启动的过程中，会启动一个QuorumPeerManager，负责各台服务器之间的底层Leader选举过程中的网络通信。
+
+（1）**消息队列**。QuorumCnxManager内部维护了一系列的队列，用来保存接收到的、待发送的消息以及消息的发送器，除接收队列以外，其他队列都按照SID分组形成队列集合，如一个集群中除了自身还有3台机器，那么就会为这3台机器分别创建一个发送队列，互不干扰。
+
+
+
+- recvQueue：消息接收队列，用于存放那些从其他服务器接收到的消息。
+- queueSendMap：消息发送队列，用于保存那些待发送的消息，按照SID进行分组。
+- senderWorkerMap：发送器集合，每个SenderWorker消息发送器，都对应一台远程Zookeeper服务器，负责消息的发送，也按照SID进行分组。
+- lastMessageSent：最近发送过的消息，为每个SID保留最近发送过的一个消息。
+
+
+（2）**建立连接**。为了能够进行相互投票，Zookeeper集群中的所有机器都需要两两建立起网络连接。QuorumCnxManager在启动时会创建一个ServerSocket来监听Leader选举的通信端口(默认为3888)。开启端口监听后，Zookeeper能够不断地接收到来自其他服务器的创建连接请求，在接收到其他服务器的TCP连接请求时，会交由receiveConnection函数来处理。为了避免两台机器之间重复地创建TCP连接，Zookeeper只允许SID大的服务器主动和其他机器建立连接，否则断开连接。在接收到创建连接请求后，服务器通过对比自己和远程服务器的SID值来判断是否接收连接请求，如果当前服务器发现自己的SID更大，那么会断开当前连接，然后自己主动和远程服务器建立连接。一旦连接建立，就会根据远程服务器的SID来创建相应的消息发送器SendWorker和消息接收器RecvWorker，并启动他们。
+
+(3) **消息接收与发送**。消息接收过程是由消息接收器RecvWorker来负责的，由于Zookeeper会为每个远程服务器都分配一个单独的RecvWorker，因此，每个RecvWorker只需要不断地从这个TCP连接中读取消息，并将其保存到recvQueue队列中。消息发送过程也比较简单，由于Zookeeper同样也已经为每个远程服务器都分配一个单独的SendWorker，因此，每个SendWorker只需要不断地从对应的消息发送队列中获取出一个消息发送即可，同时将这个消息放入lastMessageSent中来作为最近发送过的消息。在SendWorker的具体实现中，一旦Zookeeper发现针对当前服务器的消息发送队列为空，那么此时需要从lastMessageSent中取出一个最近发送过的消息来进行再次发送，这是为了解决接收方在消息接收前或者接收到消息后服务器挂了，导致消息尚未被正确处理。那么如此重复发送是否会导致其他问题呢？这里可以放心的一点是，Zookeeper能够保证接收方在处理消息时，会对重复消息进行正确的处理。
+
+
+**IV、FastLeaderElection：选举算法的核心部分**
+
+我们首先约定几个概念：
+
+- 外部投票：特指其他服务器发来的投票。
+-  内部投票：服务器自身当前的投票。
+-   选举轮次：Zookeeper服务器Leader选举的轮次，即logicalclock。
+-   PK：指对内部投票和外部投票进行对比来确定是否需要变更内部投票。
+
+**I、选票管理**
+
+- sendqueue：选票发送队列，用于保存待发送的选票。
+- recvqueue：选票接收队列，用于保存接收到的外部投票。
+- WorkerReceiver：选票接收器。其会不断地从QuorumCnxManager中获取其他服务器发来的选举消息，并将其转换成一个选票，然后保存到recvqueue中，在选票接收过程中，如果发现该外部选票的选举轮次小于当前服务器的，那么忽略该外部投票，同时立即发送自己的内部投票。
+-  WorkerSender：选票发送器，会不断地从sendqueue队列中获取待发送的选票，并将其传递到底层QuorumCnxManager中去。
+
+**II、Leader选举算法核心**
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161206114702772-1120304539.png)
+
+从上图中，我们可以看到FastLeaderElction模块是如何与底层的网络IO进行交互的。下面我们来看下这个选举过程的核心算法实现的流程：
+
+![](https://i.imgur.com/JOcERag.png)
+
+上图中展示了Leader选举算法的基本流程，其实也就是lookForLeader方法的逻辑。当Zookeeper服务器检测到当前服务器状态变成LOOKING时，就会触发Leader选举，即调用lookForLeader方法来进行Leader选举。
+
+	
+
+- 　1）**自增选举轮次**。在FastLeaderElection实现中，有一个logicalclock属性，用于标识当前Leader的选举轮次，Zookeeper规定了所有有效的投票都必须在同一轮次中，Zookeeper在开始新一轮投票时，会首先对logicalclock进行自增操作。
+
+-  2）**初始化选票**。在开始进行新一轮投票之前，每个服务器都会首先初始化自己的选票，并且在初始化阶段，每台服务器都会将自己推举为Leader。
+	
+- 3） **发送初始化选票**。完成选票的初始化后，服务器就会发起第一次投票。Zookeeper会将刚刚初始化好的选票放入sendqueue中，由发送器WorkerSender负责发送出去。
+	
+- 4）**接收外部投票**。每台服务器会不断地从recvqueue队列中获取外部选票。如果服务器发现无法获取到任何外部投票，那么就会立即确认自己是否和集群中其他服务器保持着有效的连接，如果没有连接，则马上建立连接，如果已经建立了连接，则再次发送自己当前的内部投票。
+	
+
+
+- 5）**判断选举轮次**。在发送完初始化选票之后，接着开始处理外部投票。在处理外部投票时，会根据选举轮次来进行不同的处理。
+	
+		　　　　a. 外部投票的选举轮次大于内部投票。 —— 若服务器自身的选举轮次落后于该外部投票对应服务器的选举轮次，那么就会立即更新自己的选举轮次(logicalclock)，并且清空所有已经收到的投票，然后使用初始化的投票来进行PK以确定是否变更内部投票。最终再将内部投票发送出去。
+		
+		　　　　b. 外部投票的选举轮次小于内部投票。若服务器接收的外选票的选举轮次落后于自身的选举轮次，那么Zookeeper就会直接忽略该外部投票，不做任何处理，并返回步骤4。
+		
+		　　　　c. 外部投票的选举轮次等于内部投票。此时可以开始进行选票PK。
+	
+
+
+- 6）**选票PK**。在进行选票PK时，符合任意一个条件就需要变更投票。
+	
+		　　　　a. 若外部投票中推举的Leader服务器的选举轮次大于内部投票，那么需要变更投票。
+		
+		　　　　b. 若选举轮次一致，那么就对比两者的ZXID，若外部投票的ZXID大，那么需要变更投票。
+		
+		　　　　c. 若两者的ZXID一致，那么就对比两者的SID，若外部投票的SID大，那么就需要变更投票。
+	
+
+
+- 7) **变更投票**。经过PK后，若确定了外部投票优于内部投票，那么就变更投票，即使用外部投票的选票信息来覆盖内部投票，变更完成后，再次将这个变更后的内部投票发送出去。
+	
+
+
+- 8) **选票归档**。无论是否变更了投票，都会将刚刚收到的那份外部投票放入选票集合recvset中进行归档。recvset用于记录当前服务器在本轮次的Leader选举中收到的所有外部投票（按照服务队的SID区别，如{(1, vote1), (2, vote2)...}）。
+	
+
+
+- 9) **统计投票**。完成选票归档后，就可以开始统计投票，统计投票是为了统计集群中是否已经有过半的服务器认可了当前的内部投票，如果确定已经有过半服务器认可了该投票，则终止投票。否则返回步骤4。
+	
+
+
+- 10) **更新服务器状态**。若已经确定可以终止投票，那么就开始更新服务器状态，服务器首选判断当前被过半服务器认可的投票所对应的Leader服务器是否是自己，若是自己，则将自己的服务器状态更新为LEADING，若不是，则根据具体情况来确定自己是FOLLOWING或是OBSERVING。
+
+以上10个步骤，就是FastLeaderElection选举算法的核心步骤，其中步骤4～9会经过几轮循环，直到Leader选举产生。（另外还有一个细节需要注意，就是在完成步骤9之后，如果统计投票发现已经有过半的服务器认可了当前的选票，这个时候，Zookeeper并不会立即进入步骤10来更新服务器状态，而是会等待一段时间（默认是200毫秒）来确定是否有新的更优的投票）。
 
 
 
@@ -973,38 +1186,396 @@ Zookeeper服务器的启动，大致可以分为以下五个步骤：配置文�
 
 ### 七、Zookeeper各服务器角色介绍 ###
 
+#### 1.Leader ####
+
+Leader服务器是整个Zookeeper集群工作机制中的核心，其主要工作有以下两个：
+
+- 事务请求的唯一调度和处理者，保证集群事务处理的顺序性。
+- 集群内部各服务器的调度者。
+
+**I、请求处理链**
+
+使用责任链模式来处理每一个客户端请求是Zookeeper的一大特色。在每一个服务器启动的时候，都会进行请求处理链的初始化，Leader服务器的请求处理链如下：
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161206203032319-1806823400.png)
 
 
 
+- 　 **PrepRequestProcessor**。PrepRequestProcessor是Leader服务器的请求预处理器，也是Leader服务器的第一个请求处理器。在Zookeeper中，我们将那些会改变服务器状态的请求称为事务请求（创建节点、更新数据、删除节点、创建会话等），PrepRequestProcessor能够识别出当前客户端请求是否是事务请求。对于事务请求，PrepRequestProcessor处理器会对其进行一系列预处理，诸如创建请求事务头、事务体、会话检查、ACL检查和版本检查等。
+
+- 　 **ProposalRequestProcessor**。ProposalRequestProcessor处理器是Leader服务器的事务投票处理器，也是Leader服务器事务处理流程的发起者。对于非事务性请求，ProposalRequestProcessor会直接将请求转发到CommitProcessor处理器，不再做任何处理；而对于事务性请求，除了将请求转发到CommitProcessor外，还会根据请求类型创建对应的Proposal提议，并发送给所有的Follower服务器来发起一次集群内的事务投票。同时，ProposalRequestProcessor还会将事务请求交付给SyncRequestProcessor进行事务日志的记录。
+
+-  **SyncRequestProcessor**。SyncRequestProcessor是事务日志记录处理器。该处理器用来将事务请求记录到事务日志文件中，同时还会触发Zookeeper进行数据快照。
+
+-  **AckRequestProcessor**。AckRequestProcessor处理器是Leader特有的处理器，其主要负责在SyncRequestProcessor完成事务日志记录后，向Proposal的投票收集器发送ACK反馈，以通知投票收集器当前服务器已经完成了对该Proposal的事务日志记录。
+
+-  **CommitProcessor**。CommitProcessor是事务提交处理器。对于非事务请求，该处理器会直接将其交付给下一级处理器处理；而对于事务请求，其会等待集群内针对Proposal的投票直到该Proposal可被提交，利用CommitProcessor处理器，每个服务器都可以很好地控制对事务请求的顺序处理。
+
+-  **ToBeCommitProcessor**。ToBeCommitProcessor处理器有一个toBeApplied队列，专门用来存储那些已经被CommitProcessor处理过的可被提交的Proposal。ToBeCommitProcessor处理器会将这些请求逐个交付给FinalRequestProcessor处理器进行处理，待其处理完后，再将其从toBeApplied队列中移除。
+
+-  **FinalRequestProcessor**。FinalRequestProcessor是最后一个请求处理器。该处理器主要用来进行客户端请求返回之前的收尾操作，包括创建客户端请求的响应；针对事务请求，该处理还会负责将事务应用到内存数据库中去。
+
+
+**II、LearnerHandler**
+
+为了保证整个集群内部的实时通信，同时为了确保可以控制所有的Follower/Observer服务器，Leader服务器会与每个Follower/Observer服务器建立一个TCP长连接。同时也会为每个Follower/Observer服务器创建一个名为LearnerHandler的实体。
+
+LearnerHandler，顾名思义，是Zookeeper集群中Learner服务器的管理者，主要负责Follower/Observer服务器和Leader服务器之间的一系列网络通信，包括数据同步、请求转发和Proposal提议的投票等。Leader服务器中保存了所有Follower/Observer对应的LearnerHandler。
+
+
+#### 2.Follower ####
+
+Follower服务器是Zookeeper集群状态的跟随着，其主要工作有以下三个：
+
+- 处理客户端非事务性请求（读取数据），转发事务请求给Leader服务器。
+- 参与事务请求Proposal的投票。
+- 参与Leader选举投票。
+
+和Leader服务器一样，Follower也采用了责任链模式组装的请求处理链来处理每一个客户端请求，由于不需要对事务请求的投票处理，因此Follower的请求处理链会相对简单，其处理链如下：
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161206205916319-94850171.png)
+
+-  **FollowerRequestProcessor**。FollowerRequestProcessor是Follower服务器的第一请求处理器，其主要工作就是识别当前请求是否是事务请求，若是，那么Follower就会将该请求转发给Leader服务器，Leader服务器在接收到这个事务请求后，就会将其提交到请求处理链，按照正常事务请求进行处理。
+
+- **SendAckRequestProcessor**。SendAckRequestProcessor是Follower服务器上另外一个和Leader服务器有差异的请求处理器。我们讲到过Leader服务器上有一个叫AckRequestProcessor的请求处理器，其主要负责在SyncRequestProcessor处理器完成事务日志记录后，向Proposal的投票收集器进行反馈。而在Follower服务器上，SendAckRequestProcessor处理器同样承担了事务日志记录反馈的角色，在完成事务日志记录后，会向Leader服务器发送ACK消息以表明自身完成了事务日志的记录工作。两者的唯一区别在于，AckRequestProcessor处理器和Leader服务器在同一个服务器上，因此它的ACK反馈仅仅是一个本地操作；而SendAckRequestProcessor处理器由于在Follower服务器上，因此需要通过以ACK消息的形式来向Leader服务器进行反馈。  
+
+
+#### 3.Observer ####
+
+Observer充当观察者角色，观察Zookeeper集群的最新状态变化并将这些状态同步过来。Observer服务器在工作原理上和Follower基本是一致的，对于非事务请求都可以进行独立处理，而对于事务请求，则会转发给Leader服务器进行处理。Observer不会参与任何形式的投票，包括事务请求Proposal的投票和Leader选举投票。简单地讲，Observer服务器只提供非事务服务，通常用于在不影响集群事务处理能力的前提下提升集群的非事务处理能力。
+
+
+另外，Observer的请求处理链路和Follower服务器也非常相近。其处理链如下（需要注意一点是，虽然在图中，Observer服务器在初始化阶段会将SynRequestProcessor处理器也组装上去，但是在实际运行过程中，Leader服务器不会将事务请求的投票发送给Observer服务器）：
+
+![](https://i.imgur.com/Dm60pzV.png)
 
 
 
 ### 八、Zookeeper请求处理 ###
 
+### （一）、会话创建请求 ###
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161207095042507-929689583.png)
+
+#### 1. 请求接收 ####
+
+　　(1) I/O层接收来自客户端的请求。NIOServerCnxn维护每一个客户端连接，客户端与服务器端的所有通信都是由NIOServerCnxn负责，其负责统一接收来自客户端的所有请求，并将请求内容从底层网络I/O中完整地读取出来。
+
+　　(2) 判断是否是客户端会话创建请求。每个会话对应一个NIOServerCnxn实体，对于每个请求，Zookeeper都会检查当前NIOServerCnxn实体是否已经被初始化，如果尚未被初始化，那么就可以确定该客户端一定是会话创建请求。
+
+　　(3) 反序列化ConnectRequest请求。一旦确定客户端请求是否是会话创建请求，那么服务端就可以对其进行反序列化，并生成一个ConnectRequest载体。
+
+　　(4) 判断是否是ReadOnly客户端。如果当前Zookeeper服务器是以ReadOnly模式启动，那么所有来自非ReadOnly型客户端的请求将无法被处理。因此，服务端需要先检查是否是ReadOnly客户端，并以此来决定是否接受该会话创建请求。
+
+　　(5) 检查客户端ZXID。正常情况下，在一个Zookeeper集群中，服务端的ZXID必定大于客户端的ZXID，因此若发现客户端的ZXID大于服务端ZXID，那么服务端不接受该客户端的会话创建请求。
+
+　　(6) 协商sessionTimeout。在客户端向服务器发送超时时间后，服务器会根据自己的超时时间限制最终确定该会话超时时间，这个过程就是sessionTimeout协商过程。
+
+　　(7) 判断是否需要重新激活创建会话。服务端根据客户端请求中是否包含sessionID来判断该客户端是否需要重新创建会话，若客户单请求中包含sessionID，那么就认为该客户端正在进行会话重连，这种情况下，服务端只需要重新打开这个会话，否则需要重新创建。
+
+#### 2. 会话创建 ####
+
+　　(1) 为客户端生成sessionID。在为客户端创建会话之前，服务端首先会为每个客户端分配一个sessionID，服务端为客户端分配的sessionID是全局唯一的。
+
+　　(2) 注册会话。向SessionTracker中注册会话，SessionTracker中维护了sessionsWithTimeout和sessionsById，在会话创建初期，会将客户端会话的相关信息保存到这两个数据结构中。
+
+　　(3) 激活会话。激活会话涉及Zookeeper会话管理的分桶策略，其核心是为会话安排一个区块，以便会话清理程序能够快速高效地进行会话清理。
+
+　　(4) 生成会话密码。服务端在创建一个客户端会话时，会同时为客户端生成一个会话密码，连同sessionID一同发给客户端，作为会话在集群中不同机器间转移的凭证。
+
+#### 3. 预处理 ####
+
+　　(1) 将请求交给PrepRequestProcessor处理器处理。在提交给第一个请求处理器之前，Zookeeper会根据该请求所属的会话，进行一次激活会话操作，以确保当前会话处于激活状态，完成会话激活后，则提交请求至处理器。
+
+　　(2) 创建请求事务头。对于事务请求，Zookeeper会为其创建请求事务头，服务端后续的请求处理器都是基于该请求头来识别当前请求是否是事务请求，请求事务头包含了一个事务请求最基本的一些信息，包括sessionID、ZXID（事务请求对应的事务ZXID）、CXID（客户端的操作序列）和请求类型（如create、delete、setData、createSession等）等。
+
+　　(3) 创建请求事务体。由于此时是会话创建请求，其事务体是CreateSessionTxn。
+
+　　(4) 注册和激活会话。处理由非Leader服务器转发过来的会话创建请求。
+
+#### 4. 事务处理 ####
+
+　　(1) 将请求交给ProposalRequestProcessor处理器。与提议相关的处理器，从ProposalRequestProcessor开始，请求的处理将会进入三个子处理流程，分别是Sync流程、Proposal流程、Commit流程。
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161207103040257-77514359.png)
 
 
+#### 5. 事务应用 ####
+
+　　(1) 交付给FinalRequestProcessor处理器。FinalRequestProcessor处理器检查outstandingChanges队列中请求的有效性，若发现这些请求已经落后于当前正在处理的请求，那么直接从outstandingChanges队列中移除。
+
+　　(2) 事务应用。之前的请求处理仅仅将事务请求记录到了事务日志中，而内存数据库中的状态尚未改变，因此，需要将事务变更应用到内存数据库。
+
+　　(3) 将事务请求放入队列commitProposal。完成事务应用后，则将该请求放入commitProposal队列中，commitProposal用来保存最近被提交的事务请求，以便集群间机器进行数据的快速同步。
+
+　　#### 6. 会话响应 ####
+
+　　(1) 统计处理。Zookeeper计算请求在服务端处理所花费的时间，统计客户端连接的基本信息，如lastZxid(最新的ZXID)、lastOp(最后一次和服务端的操作)、lastLatency(最后一次请求处理所花费的时间)等。
+
+　　(2) 创建响应ConnectResponse。会话创建成功后的响应，包含了当前客户端和服务端之间的通信协议版本号、会话超时时间、sessionID和会话密码。
+
+　　(3) 序列化ConnectResponse。
+
+　　(4) I/O层发送响应给客户端。
 
 
+### （二）、SetData请求 ###
 
+![](https://i.imgur.com/DHN5oxC.png)
+
+服务端对于SetData请求大致可以分为四步，预处理、事务处理、事务应用、请求响应。
+
+#### 　　1. 预处理 ####
+
+　　(1) I/O层接收来自客户端的请求。
+
+　　(2) 判断是否是客户端"会话创建"请求。对于SetData请求，按照正常事务请求进行处理。
+
+　　(3) 将请求交给PrepRequestProcessor处理器进行处理。
+
+　　(4) 创建请求事务头。
+
+　　(5) 会话检查。检查该会话是否有效。
+
+　　(6) 反序列化请求，并创建ChangeRecord记录。反序列化并生成特定的SetDataRequest请求，请求中包含了数据节点路径path、更新的内容data和期望的数据节点版本version。同时根据请求对应的path，Zookeeper生成一个ChangeRecord记录，并放入outstandingChanges队列中。
+
+　　(7) ACL检查。检查客户端是否具有数据更新的权限。
+
+　　(8) 数据版本检查。通过version属性来实现乐观锁机制的写入校验。
+
+　　(9) 创建请求事务体SetDataTxn。
+
+　　(10) 保存事务操作到outstandingChanges队列中。
+
+#### 　　2. 事务处理 ####
+
+　　对于事务请求，服务端都会发起事务处理流程。所有事务请求都是由ProposalRequestProcessor处理器处理，通过Sync、Proposal、Commit三个子流程相互协作完成。
+
+#### 　　3. 事务应用 ####
+
+　　(1) 交付给FinalRequestProcessor处理器。
+
+　　(2) 事务应用。将请求事务头和事务体直接交给内存数据库ZKDatabase进行事务应用，同时返回ProcessTxnResult对象，包含了数据节点内容更新后的stat。
+
+　　(3) 将事务请求放入commitProposal队列。
+
+#### 　　4. 请求响应 ####
+
+　　(1) 创建响应体SetDataResponse。其包含了当前数据节点的最新状态stat。
+
+　　(2) 创建响应头。包含当前响应对应的事务ZXID和请求处理是否成功的标识。
+
+　　(3) 序列化响应。
+
+　　(4) I/O层发送响应给客户端。
+
+
+### （三）、GetData请求 ###
+
+![](https://i.imgur.com/9R2FsX7.png)
+
+服务端对于GetData请求的处理，大致分为三步，预处理、非事务处理、请求响应。
+
+#### 　　1. 预处理 ####
+
+　　(1) I/O层接收来自客户端的请求。
+
+　　(2) 判断是否是客户端"会话创建"请求。
+
+　　(3) 将请求交给PrepRequestProcessor处理器进行处理。
+
+　　(4) 会话检查。
+
+#### 　　2. 非事务处理 ####
+
+　　(1) 反序列化GetDataRequest请求。
+
+　　(2) 获取数据节点。
+
+　　(3) ACL检查。
+
+　　(4) 获取数据内容和stat，注册Watcher。
+
+#### 　　3. 请求响应 ####
+
+　　(1) 创建响应体GetDataResponse。响应体包含当前数据节点的内容和状态stat。
+
+　　(2) 创建响应头。
+
+　　(3) 统计处理。
+
+　　(4) 序列化响应。
+
+　　(5) I/O层发送响应给客户端。
 
 
 ### 九、Zookeeper数据与存储 ###
 
+最后，让我们来看下Zookeeper最底层数据与存储的技术内幕。在Zookeeper中，数据存储分为两部分：内存数据存储于磁盘数据存储。
+
+### （一）、内存数据 ###
+
+![](https://i.imgur.com/QDFRJNX.png)
+
+#### I、DataTree ####
+
+DataTree是Zookeeper内存数据存储的核心，是一个树的数据结构，代表了内存中的一份完整的数据。DataTree不包含任何与网络、客户端连接及请求处理等相关的业务逻辑，是一个非常独立的Zookeeper组件。
+
+DataTree底层的数据结构其实是一个典型的ConcurrentHashMap键值对结构：
+
+	private final ConcurrentHashMap<String,DataNode> nodes = new ConcurrentHashMap<String,DataNode>();
+
+在nodes这个Map中，存放了Zookeeper服务器上所有的数据节点，可以说，对于Zookeeper数据的所有 操作，底层都是对这个Map结构的操作。nodes以数据节点的路径（path）为key,value则是节点的数据内容：DataNode。
+
+另外，对于所有的临时节点，为了方便实时访问和及时清理，DataTree中还单独将临时节点保存起来：
+
+	private final Map<Long,HashSet<String>> ephemerals = new ConcurrentHashMap<Long,HashSet<String>>()
+
+#### II、DataNode ####
+
+DataNode是数据存储的最小单元，其内部除了保存了结点的数据内容、ACL列表、节点状态之外，还记录了父节点的引用和子节点列表两个属性，同时，DataNode还提供了对子节点列表进行操作的各个接口。
+
+#### II、ZKDatabase ####
+
+Zookeeper的内存数据库，管理Zookeeper的所有会话、DataTree存储和事务日志。ZKDatabase会定时向磁盘dump快照数据，同时在Zookeeper启动时，会通过磁盘的事务日志和快照文件恢复成一个完整的内存数据库。
+
+
+### （二）、事务日志 ###
+
+我们已经多次提到了Zookeeper的事务日志。下面我们将从事务日志的存储、日志格式和日志写入过程几个方面来深入讲解Zookeeper底层实现数据一致性过程中最重要的一部分。
+
+#### I、文件存储 ####
+
+在配置Zookeeper集群时需要配置dataDir目录，其用来存储事务日志文件。也可以为事务日志单独分配一个文件存储目录:dataLogDir。若配置dataLogDir为/home/admin/zkData/zk_log，那么Zookeeper在运行过程中会在该目录下建立一个名字为version-2的子目录，该目录确定了当前Zookeeper使用的事务日志格式版本号，当下次某个Zookeeper版本对事务日志格式进行变更时，此目录也会变更，即在version-2子目录下会生成一系列文件大小一致(64MB)的文件。
+
+#### II、日志格式 ####
+
+下面我们来看看这个事务日志里面到底有些什么内容。为此，我们首先部署一个全新的Zookeeper服务器，配置相关的事务日志存储目录，启动之后，进行一些事务操作。如：
+
+	(1) 创建/test_log节点，初始值为v1。
+	
+	(2) 更新/test_log节点的数据为v2。
+	
+	(3) 创建/test_log/c节点，初始值为v1。
+	
+	(4) 删除/test_log/c节点。
+
+
+经过如上事务操作后，在Zookeeper事务日志存储目录中就可以看到产生了一个事务日志，使用二进制编辑器将这个文件打开后，就可以看到如下序列化之后的事务日志了。
+
+![](https://i.imgur.com/zf8a1Du.png)
+
+对于这个事务日志，我们无法直接通过肉眼识别出其究竟包含了哪些事务操作，但可以通过某种方式将这些事务日志转换成正常日志文件，以便让开发与运维人员能够清楚地看明白Zookeeper的事务操作。Zookeeper提供了一套简易的事务日志格式化工具org.apache.zookeeper.Server.LogFormatter,用于将这个默认的事务日志文件转换成可视化的事务操作日志 —— （将Zookeeper下的zookeeper-3.4..jar 和 slf4j-api-1.6.1.jar 复制到 .../version-2目录下，使用如下命令打开：java -classpath ./zookeeper-3.4.6.jar:./slf4j-api-1.6.1.jar org.apache.zookeeper.server.LogFormatter log.300000001），执行后的输出结果如下所示：
+
+![](https://i.imgur.com/Z9lMVvg.png)
+
+
+#### III、日志写入 ####
+
+　FileTxnLog负责维护事务日志对外的接口，包括事务日志的写入和读取等。Zookeeper的事务日志写入过程大体可以分为如下6个步骤。
+
+　　(1) **确定是否有事务日志可写**。当Zookeeper服务器启动完成需要进行第一次事务日志的写入，或是上一次事务日志写满时，都会处于与事务日志文件断开的状态，即Zookeeper服务器没有和任意一个日志文件相关联。因此在进行事务日志写入前，Zookeeper首先会判断FileTxnLog组件是否已经关联上一个可写的事务日志文件。若没有，则会使用该事务操作关联的ZXID作为后缀创建一个事务日志文件，同时构建事务日志的文件头信息，并立即写入这个事务日志文件中去，同时将该文件的文件流放入streamToFlush集合，该集合用来记录当前需要强制进行数据落盘的文件流。
+
+　　(2) **确定事务日志文件是否需要扩容**(预分配)。Zookeeper会采用磁盘空间预分配策略。当检测到当前事务日志文件剩余空间不足4096字节时，就会开始进行文件空间扩容，即在现有文件大小上，将文件增加65536KB(64MB)，然后使用"0"填充被扩容的文件空间。
+
+　　(3) **事务序列化**。对事务头和事务体的序列化，其中事务体又可分为会话创建事务、节点创建事务、节点删除事务、节点数据更新事务等。
+
+　　(4) **生成Checksum**。为保证日志文件的完整性和数据的准确性，Zookeeper在将事务日志写入文件前，会计算生成Checksum。
+
+　　(5) **写入事务日志文件流**。将序列化后的事务头、事务体和Checksum写入文件流中，此时并为写入到磁盘上。
+
+　　(6) **事务日志刷入磁盘**。由于步骤5中的缓存原因，无法实时地写入磁盘文件中，因此需要将缓存数据强制刷入磁盘。
+
+
+#### IV、日志截断 ####
+
+在Zookeeper运行过程中，可能出现非Leader记录的事务ID比Leader上大，这是非法运行状态。此时，需要保证所有机器必须与该Leader的数据保持同步，即Leader会发送TRUNC命令给该机器，要求进行日志截断，Learner收到该命令后，就会删除所有包含或大于该事务ID的事务日志文件。
+
+
+### （三）、snapshot —— 数据快照 ###
+
+数据快照是Zookeeper数据存储中另一个非常核心的运行机制，数据快照用来记录Zookeeper服务器上某一时刻的全量内存数据内容，并将其写入指定的磁盘文件中。
+
+#### 1. 文件存储 ####
+
+　　与事务文件类似，Zookeeper快照文件也可以指定特定磁盘目录，通过dataDir属性来配置。若指定dataDir为/home/admin/zkData/zk_data，则在运行过程中会在该目录下创建version-2的目录，该目录确定了当前Zookeeper使用的快照数据格式版本号。在Zookeeper运行时，会生成一系列文件。
+
+#### 　　2. 数据快照 ####
+
+　　FileSnap负责维护快照数据对外的接口，包括快照数据的写入和读取等，将内存数据库写入快照数据文件其实是一个序列化过程。针对客户端的每一次事务操作，Zookeeper都会将他们记录到事务日志中，同时也会将数据变更应用到内存数据库中，Zookeeper在进行若干次事务日志记录后，将内存数据库的全量数据Dump到本地文件中，这就是数据快照。其步骤如下
+
+　　(1) 确定是否需要进行数据快照。每进行一次事务日志记录之后，Zookeeper都会检测当前是否需要进行数据快照，考虑到数据快照对于Zookeeper机器的影响，需要尽量避免Zookeeper集群中的所有机器在同一时刻进行数据快照。采用过半随机策略进行数据快照操作。
+
+　　(2) 切换事务日志文件。表示当前的事务日志已经写满，需要重新创建一个新的事务日志。
+
+　　(3) 创建数据快照异步线程。创建单独的异步线程来进行数据快照以避免影响Zookeeper主流程。
+
+　　(4) 获取全量数据和会话信息。从ZKDatabase中获取到DataTree和会话信息。
+
+　　(5) 生成快照数据文件名。Zookeeper根据当前已经提交的最大ZXID来生成数据快照文件名。
+
+　　(6) 数据序列化。首先序列化文件头信息，然后再对会话信息和DataTree分别进行序列化，同时生成一个Checksum，一并写入快照数据文件中去。
+
+
+### （四）、初始化 ###
+
+在Zookeeper服务器启动期间，首先会进行数据初始化工作，用于将存储在磁盘上的数据文件加载到Zookeeper服务器内存中。
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161216214526120-1735909566.png)
+
+数据的初始化工作是从磁盘上加载数据的过程，主要包括了从快照文件中加载快照数据和根据事务日志进行数据修正两个过程。
+
+　　(1) 初始化FileTxnSnapLog。FileTxnSnapLog是Zookeeper事务日志和快照数据访问层，用于衔接上层业务和底层数据存储，底层数据包含了事务日志和快照数据两部分。FileTxnSnapLog中对应FileTxnLog和FileSnap。
+
+　　(2) 初始化ZKDatabase。首先构建DataTree，同时将FileTxnSnapLog交付ZKDatabase，以便内存数据库能够对事务日志和快照数据进行访问。在ZKDatabase初始化时，DataTree也会进行相应的初始化工作，如创建一些默认结点，如/、/zookeeper、/zookeeper/quota三个节点。
+
+　　(3) 创建PlayBackListener。其主要用来接收事务应用过程中的回调，在Zookeeper数据恢复后期，会有事务修正过程，此过程会回调PlayBackListener来进行对应的数据修正。
+
+　　(4) 处理快照文件。此时可以从磁盘中恢复数据了，首先从快照文件开始加载。
+
+　　(5) 获取最新的100个快照文件。更新时间最晚的快照文件包含了最新的全量数据。
+
+　　(6) 解析快照文件。逐个解析快照文件，此时需要进行反序列化，生成DataTree和sessionsWithTimeouts，同时还会校验Checksum及快照文件的正确性。对于100个快找文件，如果正确性校验通过时，通常只会解析最新的那个快照文件。只有最新快照文件不可用时，才会逐个进行解析，直至100个快照文件全部解析完。若将100个快照文件解析完后还是无法成功恢复一个完整的DataTree和sessionWithTimeouts，此时服务器启动失败。
+
+　　(7) 获取最新的ZXID。此时根据快照文件的文件名即可解析出最新的ZXID：zxid_for_snap。该ZXID代表了Zookeeper开始进行数据快照的时刻。
+
+　　(8) 处理事务日志。此时服务器内存中已经有了一份近似全量的数据，现在开始通过事务日志来更新增量数据。
+
+　　(9) 获取所有zxid_for_snap之后提交的事务。此时，已经可以获取快照数据的最新ZXID。只需要从事务日志中获取所有ZXID比步骤7得到的ZXID大的事务操作。
+
+　　(10) 事务应用。获取大于zxid_for_snap的事务后，将其逐个应用到之前基于快照数据文件恢复出来的DataTree和sessionsWithTimeouts。每当有一个事务被应用到内存数据库中后，Zookeeper同时会回调PlayBackListener，将这事务操作记录转换成Proposal，并保存到ZKDatabase的committedLog中，以便Follower进行快速同步。
+
+　　(11) 获取最新的ZXID。待所有的事务都被完整地应用到内存数据库中后，也就基本上完成了数据的初始化过程，此时再次获取ZXID，用来标识上次服务器正常运行时提交的最大事务ID。
+
+　　(12) 校验epoch。epoch标识了当前Leader周期，集群机器相互通信时，会带上这个epoch以确保彼此在同一个Leader周期中。完成数据加载后，Zookeeper会从步骤11中确定ZXID中解析出事务处理的Leader周期：epochOfZxid。同时也会从磁盘的currentEpoch和acceptedEpoch文件中读取上次记录的最新的epoch值，进行校验。
 
 
 
+### （五）、数据同步 ###
+
+![](http://images2015.cnblogs.com/blog/616953/201612/616953-20161217172721136-1675752544.png)
+
+　(1) 获取Learner状态。在注册Learner的最后阶段，Learner服务器会发送给Leader服务器一个ACKEPOCH数据包，Leader会从这个数据包中解析出该Learner的currentEpoch和lastZxid。
+
+　(2) 数据同步初始化。首先从Zookeeper内存数据库中提取出事务请求对应的提议缓存队列proposals，同时完成peerLastZxid(该Learner最后处理的ZXID)、minCommittedLog(Leader提议缓存队列commitedLog中最小的ZXID)、maxCommittedLog(Leader提议缓存队列commitedLog中的最大ZXID)三个ZXID值的初始化。
+
+对于集群数据同步而言，通常分为四类，直接差异化同步(DIFF同步)、先回滚再差异化同步(TRUNC+DIFF同步)、仅回滚同步(TRUNC同步)、全量同步(SNAP同步)。
 
 
 
+- 直接差异化同步(DIFF同步，peerLastZxid介于minCommittedLog和maxCommittedLog之间)。Leader首先向这个Learner发送一个DIFF指令，用于通知Learner进入差异化数据同步阶段，Leader即将把一些Proposal同步给自己，针对每个Proposal，Leader都会通过发送PROPOSAL内容数据包和COMMIT指令数据包来完成，
 
 
 
+- 先回滚再差异化同步(TRUNC+DIFF同步，Leader已经将事务记录到本地事务日志中，但是没有成功发起Proposal流程)。当Leader发现某个Learner包含了一条自己没有的事务记录，那么就需要该Learner进行事务回滚，回滚到Leader服务器上存在的，同时也是最接近于peerLastZxid的ZXID。
 
 
 
+-  仅回滚同步(TRUNC同步，peerLastZxid大于maxCommittedLog)。Leader要求Learner回滚到ZXID值为maxCommittedLog对应的事务操作。
 
 
 
+- 全量同步(SNAP同步，peerLastZxid小于minCommittedLog或peerLastZxid不等于lastProcessedZxid)。Leader无法直接使用提议缓存队列和Learner进行同步，因此只能进行全量同步。Leader将本机的全量内存数据同步给Learner。Leader首先向Learner发送一个SNAP指令，通知Learner即将进行全量同步，随后，Leader会从内存数据库中获取到全量的数据节点和会话超时时间记录器，将他们序列化后传输给Learner。Learner接收到该全量数据后，会对其反序列化后载入到内存数据库中。
 
 
-
+在初始化阶段，Leader会优先以全量同步方式来同步数据。同时，会根据Leader和Learner之间的数据差异情况来决定最终的数据同步方式。
