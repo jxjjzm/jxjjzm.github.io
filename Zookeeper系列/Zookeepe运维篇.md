@@ -24,7 +24,6 @@
 
 
 - telnet ip port —— 使用telnet客户端登录Zookeeper的对外服务端口；
-- nc ip port —— 模拟http heads
 - conf —— 用于输出Zookeeper服务器运行时使用的基本配置信息；
 - cons —— 用于输出当前这台服务器上所有客户端连接的详细信息；
 - crst —— 用于重置所有的客户端连接信息；
@@ -45,21 +44,36 @@
 
 从Apache官方网站上下载的Zookeeper，默认开启了JMX功能，但是却只限本地连接，无法通过远程连接，读者可以打开%ZK_HOME%bin目录下的zkServer.sh 文件，在这个配置中并没有开启远程连接JMX的端口信息，通常需要加入以下三个配置才能开启远程JMX：
 
--Dcom.sun.management.jmxremote.port=5000
--Dcom.sun.management.jmxremote.ssl=false
--Dcom.sun.management.jmxremote.authenticate=false
+	-Dcom.sun.management.jmxremote.port=5000
+	-Dcom.sun.management.jmxremote.ssl=false
+	-Dcom.sun.management.jmxremote.authenticate=false
 
 
 
 ### 四、监控 ###
 
+关于Zookeeper监控，这里主要介绍下阿里中间件的软负载团队开发的TaoKeeper监控系统，TaoKeeper主要从实时监控和数据统计两方面来保障Zookeeper集群的稳定性。
 
 #### 1.实时监控 ####
+
+所谓实时监控，是指相对实时地对运行中的Zookeeper集群进行运行状态监控，包括对Zookeeper节点可用性的监控和集群读写TPS的监控。
+
+
+
+- 节点可用性自检 —— 节点可用性自检是指对一个Zookeeper集群中每个服务器节点上的指定数据节点/TAOKEEPER.MONITOR.ALIVE.CHECK定期进行三次如下操作系列：
+
+		创建连接 —— 发布数据 —— 接收数据更新通知 —— 获取数据 —— 对比数据
+
+三次流程均成功且每次耗费的时间在指定的时间范围内即可视为该节点处于正常状态。
+
+
+
+- 读写TPS监控 
 
 
 #### 2.数据统计 ####
 
-
+上面提到了Zookeeper的四字命令能够帮助我们获取到Zookeeper的运行时数据，Taokeeper将这些四字命令的返回结果进行了整合，同时持久化到数据库中，这样一来，我们就能够可视化地看到Zookeeper的运行时数据，并且还能看到这些数据的变化趋势，包括连接数、订阅者数、数据节点总数以及收发的数据量大小等。
 
 
 ### 五、构建一个高可用的集群 ###
