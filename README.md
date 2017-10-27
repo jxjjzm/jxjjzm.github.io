@@ -106,28 +106,28 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h2 id="jxjjzm-tool">开发工具系列</h2>
 <h3 id="jxjjzm-tool-git">Git</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-svn">Svn</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-jenkins">Jenkins</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-maven">Maven</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-gradle">Gradle</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-ant">Ant</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-tool-sonarqube">Sonarqube</h3>
-*备注*
+*TODO*
 
 
 <h2 id="jxjjzm-linux">Linux系列</h2>
-*备注*
+*TODO*
 
 
 <h2 id="jxjjzm-dubbo">Dubbo系列</h2>
 <h3 id="jxjjzm-dubbo-code">Dubbo源码篇</h3>
-*这里分享了Dubbo部分源码笔记心得，希望对你有所帮助*
+
 
 * [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)：*本篇博文主要剖析了Dubbo服务是如何启动的以及Dubbo是如何加载解析自定义配置文件并初始化Bean的。*
 * [Dubbo核心机制分析之Extension](https://www.baidu.com/)：
@@ -143,7 +143,6 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 
 <h3 id="jxjjzm-dubbo-inAction">Dubbo实战篇</h3>
-*备注*
 
 * [Dubbo快速入门](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E5%AE%9E%E6%88%98%E7%AF%87/Dubbo%E5%85%A5%E9%97%A8.md)：
 * [Dubbo高级配置](https://www.baidu.com/)：
@@ -152,25 +151,25 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h2 id="jxjjzm-spring">Spring系列</h2>
 <h3 id="jxjjzm-spring-mvc">Spring+Spring MVC</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-spring-boot">Spring Boot</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-spring-mvc">Spring Cloud</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-spring-mvc">Spring Data</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-spring-mvc">Spring Batch</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-spring-mvc">Spring Security</h3>
-*备注*
+*TODO*
 
 
 
 <h2 id="jxjjzm-distributed-system">分布式系列</h2>
 <h3 id="jxjjzm-distributed-system-theory">分布式理论基础</h3>
-*备注*
+*TODO*
 <h3 id="Keepalive+Nginx">Keepalive+Nginx</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-zookeeper">Zookeeper</h3>
 
 
@@ -183,23 +182,28 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 
 <h3 id="jxjjzm-distributed-system-redis">Redis</h3>
-*备注*
 
-* [Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)：
+
+* [Redis概述篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E6%A6%82%E8%BF%B0%E7%AF%87.md)
+* [Redis使用篇——Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)：
+
+
+
+
 <h3 id="jxjjzm-distributed-system-memcached">Memcached</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-disconf">Disconf</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-full-link">分布式全链路追踪</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-web-api">分布式网关</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-docker">Docker</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-elk">ELK</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-distributed-system-job">Elastic-Job</h3>
-*备注*
+*TODO*
 
 
 
@@ -207,28 +211,26 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h2 id="jxjjzm-mq">MQ系列</h2>
 <h3 id="jxjjzm-mq-activitymq">activitymq</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-mq-rabbitmq">rabbitmq</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-mq-rocketmq">rocketmq</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-mq-zeromq">zeromq</h3>
-*备注*
+*TODO*
 
 
 
 
 <h2 id="jxjjzm-mq">Database系列</h2>
 <h3 id="jxjjzm-db-mysql">Mysql</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-db-oracle">Oracle</h3>
-*备注*
-<h3 id="jxjjzm-db-db2">DB2</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-db-corba">Corba</h3>
-*备注*
+*TODO*
 <h3 id="jxjjzm-db-mycat">Mycat</h3>
-*备注*
+*TODO*
 
 
 
