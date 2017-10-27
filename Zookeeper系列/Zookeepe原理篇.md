@@ -679,7 +679,7 @@ Zookeeper客户端在向服务器发送更新节点数据请求时，会发送Se
 - HostProvider，客户端地址列表管理器。
 -  ClientCnxn，客户端核心线程，内部包含了SendThread和EventThread两个线程，SendThread为I/O线程，主要负责Zookeeper客户端和服务器之间的网络I/O通信；EventThread为事件线程，主要负责对服务端事件进行处理。
 
-![](http://images2015.cnblogs.com/blog/616953/201611/616953-20161124170014471-1163146559.png)
+![](https://i.imgur.com/qxUOQPA.png)
 
 Zookeeper客户端初始化与启动环节，实际就是Zookeeper对象的实例化过程。客户端的整个初始化和启动过程大体可以分为如下3个步骤：
 
