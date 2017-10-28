@@ -34,11 +34,11 @@ make命令执行完成后，会在当前目录下生成本个可执行文件，�
 	
 
 -  redis-server：Redis服务器的daemon启动程序
--   redis-cli：Redis命令行操作工具。当然，你也可以用telnet根据其纯文本协议来操作
--    redis-benchmark：Redis性能测试工具，测试Redis在你的系统及你的配置下的读写性能
--    redis-stat：Redis状态检测工具，可以检测Redis当前状态参数及延迟状况 
--     redis-check-aof:  日志文件检测工(比如断电造成日志损坏,可以检测并修复)
--      redis-check-dump: 快照文件检测工具,效果类上
+-  redis-cli：Redis命令行操作工具。当然，你也可以用telnet根据其纯文本协议来操作
+-  redis-benchmark：Redis性能测试工具，测试Redis在你的系统及你的配置下的读写性能
+-  redis-stat：Redis状态检测工具，可以检测Redis当前状态参数及延迟状况 
+-  redis-check-aof:  日志文件检测工(比如断电造成日志损坏,可以检测并修复)
+-  redis-check-dump: 快照文件检测工具,效果类上
 
 
 备注：（容易碰到的常见问题）
@@ -227,10 +227,10 @@ II、指定IP端口关闭：
 	1. #GENERAL  
 	2. daemonize no  
 	3. tcp-backlog 511  
-	4. timeout 0  
+	4. timeout 0            #当客户端闲置多长时间后关闭连接，如果指定为0，表示关闭该功能
 	5. tcp-keepalive 0  
-	6. loglevel notice  
-	7. databases 16  
+	6. loglevel notice      #指定日志记录级别，Redis总共支持四个级别：debug、verbose、notice、warning,默认为verbose
+	7. databases 16         #设置数据库的数量，默认数据库为0，可以使用 SELECT <dbid> 命令在连接上指定数据库id 
 	8. dir /opt/redis/data  
 	9. slave-serve-stale-data yes  
 	10. #slave只读  
@@ -274,7 +274,7 @@ II、指定IP端口关闭：
 
 	1. #包含通用配置  
 	2. include /opt/redis/redis-common.conf  
-	3. #监听tcp端口  
+	3. #指定Redis监听tcp端口,默认端口为6379  
 	4. port 6379  
 	5. #最大可用内存  
 	6. maxmemory 100m  
