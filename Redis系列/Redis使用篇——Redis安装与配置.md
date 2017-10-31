@@ -148,6 +148,12 @@ II、指定IP端口关闭：
 
 
 
+示例：
+
+![](https://i.imgur.com/2FMRfF1.png)
+
+
+
 ### 二、集群环境搭建 ###
 
 #### （一）、安装redis-cluster依赖（redis集群管理工具redis-trid.rb依赖ruby环境，首先需要安装ruby环境）. ####
