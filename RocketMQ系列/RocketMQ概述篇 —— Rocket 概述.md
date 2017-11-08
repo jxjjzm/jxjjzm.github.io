@@ -168,7 +168,159 @@ Consumer Group 有 3 个实例（可能是 3 个进程，或者 3 台机器）�
 
 
 
+### 三、RocketMQ关键特性 ###
 
+#### 1.单机支持1 万以上持久化队列 ####
+
+- 1）所有数据单独存储到一个Commit Log，完全顺序写，随机读。
+- 2）对最终用户展现的队列实际只存储消息在Commit Log 的位置信息，幵丏串行方式刷盘。
+
+![](https://i.imgur.com/5UW7qoj.png)
+
+优点：
+
+- 1）队列轻量化，单个数据非常少。 
+- 2）对磁盘的访问串行化，避免竟争不会因为队列增加导致 IO WAIT增高。 
+
+
+缺点：
+
+- 1）写虽然完全是顺序，但读却变成了的随机读。
+- 2）读一条消息，会先读 Consume Queue，再读 Commit Log，增加了开销。
+- 3）要保证Commit Log与Consume Queue完全的一致，增加了编程的复杂度。
+
+
+以上缺点如何克服：
+
+（1）随机读，尽可能让读命中PAGECACHE，减少IO读操作，所以内存越大越好。如果系统中堆积的消息过多，读数据要访问磁盘会不会由于随机读导致系统性能急剧下降，答案是否定的。
+
+- 访问PAGECACHE时，即使只访问1k的消息，系统也会提前预读出更多数据，在下次读时，就可能命中内存。
+- 随机访问Commit Log磁盘数据，系统IO调度算法设置为NOOP方式，会在一定程度上将完全的随机读变成顺序跳跃方式，而顺序跳跃方式读较完全的随机读性能会高5倍以上。另外4K的消息在完全随机访问情况下，仍然可以达到8K次每秒以上的读性能。
+
+（2）由于Consume Queue存储数据量极少，而且是顺序读，在PAGECACHE预读作用下，Consume Queue的读性能几乎与内存一致，即使堆积情况下。所以可认为Consume Queue完全不会阻碍读性能。
+
+（3）Commit Log中存储了所有的元信息，包含消息体，类似于Mysql、Oracle的redolog,所以只要有Commit Log在，Consume Queue 即使数据丢失，仍然可以恢复出来。
+
+
+#### 2.刷盘策略 ####
+
+RocketMQ的所有消息都是持久化的，先写入系统PAGECACHE，然后刷盘，可以保证内存与磁盘都有一份数据，访问时，直接从内存读取。
+
+**I、异步刷盘**
+
+![](https://i.imgur.com/mqnlWQf.png)
+
+在有RAID 卡，SAS 15000 转磁盘测试顺序写文件，速度可以达到300M 每秒左右，而线上的网卡一般都为千兆网卡，写磁盘速度明显快亍数据网络入口速度，那么是否可以做到写完内存就向用户返回，由后台线程刷盘呢？
+
+（1）由亍磁盘速度大亍网卡速度，那举刷盘的迕度肯定可以跟上消息的写入速度。
+
+（2）万一由于此时系统压力过大，可能堆积消息，除了写入IO，还有读取IO，万一出现磁盘读取落后情况，会不会导致内存溢出，答案是否定的，原因如下：
+
+- 写入消息到PAGECACHE时，如果内存不足，则尝试丢弃干净的PAGE，腾出内存供新消息使用，策略是LRU方式。
+- 如果干净页不足，此时写入PAGECACHE会被阻塞，系统尝试刷盘部分数据，大约每次尝试32个PAGE，来找出更多干净PAGE。
+
+
+
+**II、同步刷盘**
+
+![](https://i.imgur.com/MsaI8ag.png)
+
+同步刷盘与异步刷盘的唯一区别是异步刷盘写完PAGECACHE 直接迒回，而同步刷盘需要等待刷盘完成才返回，同步刷盘流程如下：
+
+- 1）写入PAGECACHE后，线程等待，通知刷盘线程刷盘。
+- 2）刷盘线程刷盘后，唤醒前端等待线程，可能是一批线程。
+- 3）前端等待线程向用户返回成功。
+
+
+#### 3.消息查询 ####
+
+**I、按照Message Id查询消息**
+
+![](https://i.imgur.com/FREPIqw.png)
+
+MsgId总共16字节，包含消息存储主机地址，消息Commit Log offset。从MsgId中解析出Broker 的地址和Commit Log的偏移地址，然后按照存储格式所在位置消息buffer解析成一个完整的消息。
+
+
+
+**II、按照Message Key查询消息**
+
+![](https://i.imgur.com/PvoXg6K.png)
+
+
+
+- 1）根据查询的key的hashcode%slotNum得到具体的槽的位置 （slotNum是一个索引文件里面包含的最大槽的数目，例如图中所示 slotNum=5000000） 。
+- 2）根据 slotValue（slot 位置对应的值）查找到索引项列表的最后一项（倒序排列，slotValue 总是指向最新的一个索引项） 。
+- 3）遍历索引项列表返回查询时间范围内的结果集（默认一次最大返回的 32 条记录）
+- 4）Hash 冲突；寻找 key 的 slot 位置时相当于执行了两次散列函数，一次 key 的 hash，一次 key 的 hash 值取模，因此这里存在两次冲突的情况；第一种，key 的 hash 值不同但模数相同，此时查询的时候会在比较一次 key 的hash 值（每个索引项保存了 key 的 hash 值） ，过滤掉 hash 值不相等的项。第二种，hash 值相等但 key 不等，出于性能的考虑冲突的检测放到客户端处理（key 的原始值是存储在消息文件中的，避免对数据文件的解析） ，客户端比较一次消息体的 key 是否相同。
+- 5）存储；为了节省空间索引项中存储的时间是时间差值（存储时间-开始时间，开始时间存储在索引文件头中） ，整个索引文件是定长的，结构也是固定的。索引文件存储结构参见上图 。
+
+
+
+#### 4.服务器消息过滤 ####
+
+RocketMQ的消息过滤方式有别于其他消息中间件，是在订阅时，再做过滤，先来看下Consume Queue的存储结构。
+
+![](http://ata2-img.cn-hangzhou.img-pub.aliyun-inc.com/3f39e422477e43da22ded6a2cb82cb54.png)
+
+
+
+- 1）在Broker端进行Message Tag比对，先遍历Consume Queue，如果存储的Message Tag与订阅的Message Tag不符合，则跳过，继续比对下一个，符合则传输给Consumer。注意：Message Tag是字符串形式，Consume Queue中存储的是其对应的hashcode，比对时也是比对hashcode。
+- 2）Consumer收到过滤后的消息后，同样也要执行在Broker端的操作，但是比对的是真实的Message Tag字符串，而不是Hashcode。
+
+
+为什么过滤要这样做？
+
+
+
+- Message Tag存储Hashcode，是为了在Consume Queue定长方式存储，节约空间。
+- 过滤过程中不会访问Commit Log数据，可以保证堆积情况下也能高效过滤。
+- 即使存在Hash冲突，也可以在Consumer端进行修正，保证万无一失。
+
+
+#### 5.顺序消息 ####
+
+很多业务有顺序消息的需求，RocketMQ支持全局和局部的顺序，一般推荐使用局部顺序，将具有顺序要求的一类消息hash到同一个队列中便可保持有序，如下图所示。
+
+![](http://ata2-img.cn-hangzhou.img-pub.aliyun-inc.com/ecddb3cfe047a15cde60191021219a39.png)
+
+详细请参考 [RocketMQ概述篇 —— Rocket 顺序消息与重复消息、事务消息](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/RocketMQ%E7%B3%BB%E5%88%97/RocketMQ%E6%A6%82%E8%BF%B0%E7%AF%87%20%E2%80%94%E2%80%94%20Rocket%20%E9%A1%BA%E5%BA%8F%E6%B6%88%E6%81%AF%E4%B8%8E%E9%87%8D%E5%A4%8D%E6%B6%88%E6%81%AF%E3%80%81%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF.md)
+
+#### 6.事务消息 ####
+
+详细请参考 [RocketMQ概述篇 —— Rocket 顺序消息与重复消息、事务消息](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/RocketMQ%E7%B3%BB%E5%88%97/RocketMQ%E6%A6%82%E8%BF%B0%E7%AF%87%20%E2%80%94%E2%80%94%20Rocket%20%E9%A1%BA%E5%BA%8F%E6%B6%88%E6%81%AF%E4%B8%8E%E9%87%8D%E5%A4%8D%E6%B6%88%E6%81%AF%E3%80%81%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF.md)
+
+
+#### 7.定时消息 ####
+
+日常业务中有很多定时消息的场景，比如在电商交易中超时未支付关闭订单的场景，在订单创建时会发送一条 MQ 延时消息，这条消息将会在30分钟以后投递给消费者，消费者收到此消息后需要判断对应的订单是否已完成支付。如支付未完成，则关闭订单，如已完成支付则忽略。
+
+RocketMQ为了实现定时消息，引入延时级别，牺牲部分灵活性，事实上很少有业务需要随意指定定时时间的灵活性。定时消息内容被存储在数据文件中，索引按延时级别堆积在定时消息队列中，具有跟普通消息一致的堆积能力，如下图所示。
+
+![](http://ata2-img.cn-hangzhou.img-pub.aliyun-inc.com/f32846631e1fe40b69c1c7057965e948.png)
+
+
+
+#### 8.单个JVM进程也能利用机器超大内存 ####
+
+![](http://www.uml.org.cn/zjjs/images/2015040118.png)
+
+
+
+- 1）.Producer发送消息，消息从socket进入java 堆
+- 2）.Producer发送消息，消息从java堆进入pagecache，物理内存
+- 3）.Producer发送消息，由异步线程刷盘，消息从pagecache刷入磁盘
+- 4）.Consumer拉消息（正常消费），消息直接从pagecache（数据在物理内存）转入socket，到达Consumer，不经过java堆。这种消费场景最多，线上96G物理内存，按照1K消息算，可以物理缓存1亿条消息
+- 5）.Consumer拉消息（异常消费），消息直接从pagecache转入socket
+- 6）.Consumer拉消息（异常消费），由于socket访问了虚拟内存，产生缺页中断，此时会产生磁盘IO，从磁盘Load消息到pagecache，然后直接从socket发出去
+- 7）.同5
+- 8）.同6
+
+
+#### 9.消息堆积问题解决办法 ####
+
+![](https://i.imgur.com/e2Yrrbr.png)
+
+在有Slave情况下，Master一旦发现Consumer访问堆积在磁盘的数据时，会向Consumer下达一个重定向指令，令Consumer从Slave拉取数据，这样正常的发消息与正常消费的Consumer都不会因为消息堆积受影响，因为系统将堆积场景与非堆积场景分割在了两个不同的节点处理。这里会产生另一个问题，Slave会不会写性能下降，答案是否定的。因为Slave的消息写入只追求吞吐量，不追求实时性，只要整体的吞吐量高就行了，而Slave每次都是从Master拉取一批数据，如1M，这种批量顺序写入方式使堆积情况，整体吞吐量影响相对较小，只是写入RT会变长.
 
 
 
