@@ -29,7 +29,26 @@ Disconf —— Distributed Configuration Management Platform(分布式配置管�
 - 配置监控：平台提供自校验功能（进一步提高稳定性），可以定时校验应用系统的配置是否正确。
 
 
-### 2.模块架构 ###
+
+### 2.[Disconf安装与配置](http://disconf.readthedocs.io/zh_CN/latest/install/index.html) ###
+
+- [disconf-client Install](http://disconf.readthedocs.io/zh_CN/latest/install/src/01.html)
+- [disconf-web安装](http://disconf.readthedocs.io/zh_CN/latest/install/src/02.html)
+
+
+### 3.Disconf基本使用 ###
+
+- [Quick Start](http://disconf.readthedocs.io/zh_CN/latest/quick/index.html)
+- [Tutorial-client](http://disconf.readthedocs.io/zh_CN/latest/tutorial-client/index.html)
+- [Tutorial-web](http://disconf.readthedocs.io/zh_CN/latest/tutorial-web/index.html)
+- [常见问题](http://disconf.readthedocs.io/zh_CN/latest/question/index.html)
+
+
+
+
+### 4.模块架构 —— [分布式配置管理平台Disconf设计](http://disconf.readthedocs.io/zh_CN/latest/design/src/%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0Disconf.html) ###
+
+
 
 ![](https://img2.tuicool.com/fiya6j6.jpg!web)
 
@@ -45,32 +64,39 @@ Disconf —— Distributed Configuration Management Platform(分布式配置管�
 	- 主备分配模块：主备竞争结束后，统一管理主备分配与主备监控控制
 	- 主备竞争模块：支持分布式环境下的主备竞争
 
+在您的 Maven POM 文件里加入：
+
 			<dependency>
 			    <groupId>com.baidu.disconf</groupId>
 			    <artifactId>disconf-client</artifactId>
-			    <version>2.6.20</version>
+			    <version>2.6.36</version>
 			</dependency>
 
 - disconf-tool : 分布式配置工具包，依赖disconf-core包。 Disconf-tool是disconf的辅助工具类。
 - [disconf-web](https://github.com/knightliao/disconf/tree/master/disconf-web) : 分布式配置平台服务模块, 依赖disconf-core包。采用SpringMvc+纯HTML方式实现。 用户使用它来进行日常的分布式配置管理。（[Disconf-web详细设计文档](http://disconf.readthedocs.io/zh_CN/latest/design/src/disconf-web%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3.html)）
 
 
-[分布式配置管理平台Disconf](http://disconf.readthedocs.io/zh_CN/latest/design/src/%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0Disconf.html)
+### 5.其他 ###
+
+#### I、局限性和注意事项 ####
+
+
+- 配置文件类、配置项所在的类、回调函数类 都必须是JavaBean，并且它们的”scope” 都必须是singleton的。
+- 本系统实现的注解方案具有些局限性，具体如下:
+	- 用户标注配置时略有些不习惯。目前注解是放在get方法之上的，而不是放在域上。
+	- 注解放在get方法上，一般情况下是没有问题的。但是对于”call self”的方法调用，AOP无法拦截得到，这样就无法统一处理这些配置。一旦出现这种情况，“非一致性读问题”就会产生。
+
+
+#### II、[disconf的Zookeeper异常考虑](http://disconf.readthedocs.io/zh_CN/latest/design/src/Zookeeper%E5%BC%82%E5%B8%B8%E8%80%83%E8%99%91.html) ####
+
+
+#### III、[细节讨论](http://disconf.readthedocs.io/zh_CN/latest/design/src/%E7%BB%86%E8%8A%82%E8%AE%A8%E8%AE%BA.html) ####
 
 
 
+附录：
 
-
-
-
-
-
-
-
-
-
-
-
+- [开源分布式配置中心选型](http://vernonzheng.com/2015/02/09/%E5%BC%80%E6%BA%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E9%80%89%E5%9E%8B/)
 
 
 
