@@ -61,7 +61,8 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h3 id="jxjjzm-java-design-pattern">专题之Design Pattern</h3>
 
-* [设计模式之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88Bean%E5%8A%A0%E8%BD%BD%EF%BC%89.md)
+* [设计模式——创建型之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%9B%E5%BB%BA%E5%9E%8B%E4%B9%8B%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F.md)
+* [设计模式——创建型之工厂模式（简单工厂模式、工厂方法模式、抽象工厂模式）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%9B%E5%BB%BA%E5%9E%8B%E4%B9%8B%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%88%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E3%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E3%80%81%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%89.md)
 
 
 <h3 id="jxjjzm-java-java8">专题之Java8</h3>
@@ -76,54 +77,42 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h3 id="jxjjzm-distributed-system-talk">分布式技术杂谈</h3>
 
-- [浅析分布式高可用之限流特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%90%E6%B5%81%E7%89%B9%E6%8A%80.md "浅析分布式高可用之限流特技")
-- [浅析分布式高可用之降级特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%8D%E7%BA%A7%E7%89%B9%E6%8A%80.md)
-- [浅析分布式网络通信](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1.md "分布式网络通信")
-- [浅析分布式锁技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E6%8A%80%E6%9C%AF.md "浅析分布式锁技术")
-- [浅析Redis分布式缓存](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90Redis%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98.md "浅析Redis分布式缓存")
-- [浅析分布式事务技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E6%8A%80%E6%9C%AF.md "浅析分布式事务技术")
+- [浅析分布式高可用之限流特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%90%E6%B5%81%E7%89%B9%E6%8A%80.md)
+- [浅析分布式高可用之降级特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%8D%E7%BA%A7%E7%89%B9%E6%8A%80.md)
+- [浅析分布式网络通信](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1.md)
+- [浅析分布式锁技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E6%8A%80%E6%9C%AF.md)
+- [浅析Redis分布式缓存](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90Redis%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98.md)
+- [浅析分布式事务技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%9D%82%E8%B0%88/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E6%8A%80%E6%9C%AF.md)
 
 
 <h3 id="jxjjzm-distributed-system-zookeeper">Zookeeper</h3>
 
-- [Zookeeper概述篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Zookeeper%E7%B3%BB%E5%88%97/Zookeeper%E6%A6%82%E8%BF%B0%E7%AF%87.md)
-- [Zookeeper使用篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Zookeeper%E7%B3%BB%E5%88%97/Zookeeper%E4%BD%BF%E7%94%A8%E7%AF%87.md)
-- [Zookeepe原理篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Zookeeper%E7%B3%BB%E5%88%97/Zookeepe%E5%8E%9F%E7%90%86%E7%AF%87.md)
-- [Zookeepe运维篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Zookeeper%E7%B3%BB%E5%88%97/Zookeepe%E8%BF%90%E7%BB%B4%E7%AF%87.md)
+- [Zookeeper概述篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Zookeeper/Zookeeper%E6%A6%82%E8%BF%B0%E7%AF%87.md)
+- [Zookeeper使用篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Zookeeper/Zookeeper%E4%BD%BF%E7%94%A8%E7%AF%87.md)
+- [Zookeepe原理篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Zookeeper/Zookeepe%E5%8E%9F%E7%90%86%E7%AF%87.md)
+- [Zookeepe运维篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Zookeeper/Zookeepe%E8%BF%90%E7%BB%B4%E7%AF%87.md)
 
 
 <h3 id="jxjjzm-distributed-system-redis">Redis</h3>
 
 
-* [Redis概述篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E6%A6%82%E8%BF%B0%E7%AF%87.md)
-* [Redis使用篇——Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Redis%E7%B3%BB%E5%88%97/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)：
+* [Redis概述篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E6%A6%82%E8%BF%B0%E7%AF%87.md)
+* [Redis使用篇——Redis安装与配置](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE.md)
+* [Redis使用篇——Redis集群（Cluster）| 哨兵模式（Sentinel）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E9%9B%86%E7%BE%A4%EF%BC%88Cluster%EF%BC%89%20%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F%EF%BC%88Sentinel%EF%BC%89.md)
+* [Redis使用篇——网络通信（协议）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%EF%BC%88%E5%8D%8F%E8%AE%AE%EF%BC%89.md)
+* [Redis使用篇——Redis主从复制（master-slave replication）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%EF%BC%88master-slave%20replication%EF%BC%89.md)
+* [Redis使用篇——Redis 持久化(Persistence)](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%20%E6%8C%81%E4%B9%85%E5%8C%96(Persistence).md)
+* [Redis使用篇——Redis 独立功能的实现（事务、排序、发布与订阅...）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%20%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E4%BA%8B%E5%8A%A1%E3%80%81%E6%8E%92%E5%BA%8F%E3%80%81%E5%8F%91%E5%B8%83%E4%B8%8E%E8%AE%A2%E9%98%85...%EF%BC%89.md)
+* [Redis使用篇——Lua脚本](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Lua%E8%84%9A%E6%9C%AC.md)
 
 
 
+<h3 id="jxjjzm-distributed-system-dubbo">dubbo</h3>
+
+* [Dubbo使用篇之Dubbo](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E5%AE%9E%E6%88%98%E7%AF%87/Dubbo%E5%85%A5%E9%97%A8.md)
+* [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)
 
 
-<h2 id="jxjjzm-dubbo">Dubbo系列</h2>
-<h3 id="jxjjzm-dubbo-code">Dubbo源码篇</h3>
-
-
-* [Dubbo核心机制分析之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87/Dubbo%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90%E4%B9%8BBean%E5%8A%A0%E8%BD%BD.md)：*本篇博文主要剖析了Dubbo服务是如何启动的以及Dubbo是如何加载解析自定义配置文件并初始化Bean的。*
-* [Dubbo核心机制分析之Extension](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Invoker](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Exchange](https://www.baidu.com/) ：
-* [Dubbo核心机制分析之Filter](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Listener](https://www.baidu.com/)：
-* [Dubbo核心机制分析之Proxy](https://www.baidu.com/)：
-* [Dubbo核心机制分析之RPC](https://www.baidu.com/)：
-* [Dubbo过程分析之Export](https://www.baidu.com/)：
-* [Dubbo过程分析之Refer](https://www.baidu.com/)：
-* [Dubbo过程分析之Registry](https://www.baidu.com/) ：
-
-
-<h3 id="jxjjzm-dubbo-inAction">Dubbo实战篇</h3>
-
-* [Dubbo快速入门](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Dubbo%E7%B3%BB%E5%88%97/Dubbo%E5%AE%9E%E6%88%98%E7%AF%87/Dubbo%E5%85%A5%E9%97%A8.md)：
-* [Dubbo高级配置](https://www.baidu.com/)：
-* [Dubbo问题集锦](https://www.baidu.com/)：
 
 
 
