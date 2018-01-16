@@ -34,7 +34,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 	- [Spring Data](#jxjjzm-spring-data)
 	- [Spring Batch](#jxjjzm-spring-batch)
 	- [Spring Security](#jxjjzm-spring-security)
-- [分布式系列](#jxjjzm-distributed-system) 
+- [Distributed System](#jxjjzm-distributed-system) 
 	- [分布式理论基础](#jxjjzm-distributed-system-theory)
 	- [Keepalive+Nginx](#jxjjzm-distributed-system-nginx)
 	- [Zookeeper](#jxjjzm-distributed-system-zookeeper)
@@ -142,12 +142,16 @@ TODO
 
 
 
-<h2 id="jxjjzm-distributed-system">分布式系列</h2>
-<h3 id="jxjjzm-distributed-system-theory">分布式理论基础</h3>
-TODO
-<h3 id="Keepalive+Nginx">Keepalive+Nginx</h3>
-TODO
-<h3 id="jxjjzm-distributed-system-zookeeper">Zookeeper</h3>
+<h2 id="jxjjzm-distributed-system">Distributed System</h2>
+
+- [浅析分布式高可用之限流特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%90%E6%B5%81%E7%89%B9%E6%8A%80.md "浅析分布式高可用之限流特技")
+- [浅析分布式高可用之降级特技](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B9%8B%E9%99%8D%E7%BA%A7%E7%89%B9%E6%8A%80.md)
+- [浅析分布式网络通信](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1.md "分布式网络通信")
+- [浅析分布式锁技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E6%8A%80%E6%9C%AF.md "浅析分布式锁技术")
+- [浅析Redis分布式缓存](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90Redis%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98.md "浅析Redis分布式缓存")
+- [浅析分布式事务技术](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/%E6%B5%85%E6%9E%90%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E6%8A%80%E6%9C%AF.md "浅析分布式事务技术")
+
+
 
 
 
