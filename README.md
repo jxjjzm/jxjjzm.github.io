@@ -120,6 +120,12 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 * [Dubbo源码篇之服务的启动与初始化（Bean加载）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Dubbo/Dubbo%E6%BA%90%E7%A0%81%E7%AF%87%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88Bean%E5%8A%A0%E8%BD%BD%EF%BC%89.md)
 
 
+<h3 id="jxjjzm-distributed-system-disconf">Disconf</h3>
+
+- [分布式配置管理平台Disconf](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Disconf/%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0Disconf.md)
+
+
+
 <h2 id="jxjjzm-database">Database系列</h2>
 <h3 id="jxjjzm-database-mysql">Mysql</h3>
 //TODO
