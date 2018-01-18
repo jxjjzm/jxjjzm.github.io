@@ -5,6 +5,12 @@ You can use the [editor on GitHub](https://github.com/jxjjzm/jxjjzm.github.io/ed
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
+当你的能力还驾驭不了你的目标时，那你就应该沉下心来历练
+
+当你的才华还撑不起你的野心时，那你就应该静下心来学习
+
+（笔者序：笔者总有一种感觉，总觉得看书、浏览博客、阅读源码的时候如果没有及时做下笔记总会觉得收获有限，就好像大学考试老师没有划重点一样心中没底。我一直认为读书是这样一个过程：书要先读厚再读薄最后慢慢融化为自己的东西。基于以上观点此博文应运而生，笔者在此郑重申明 —— 博文中内容部分来源于笔者阅读过的技术书籍摘录、部分来源于网上的博客精粹、另外一部分来源于笔者阅读源码或者项目中经验积累。）
+
 ***
 #目录
 
