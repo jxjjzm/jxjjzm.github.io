@@ -67,6 +67,136 @@ IoC和DI由什么关系呢？其实它们是同一个概念的不同角度描述
 （以上几点好处，难道还不足以打动你吗......）
 
 
+### 二、Spring IOC 使用 ###
+
+#### 1、Spring容器和Bean管理 ####
+
+**I、Spring 容器**
+
+在Spring中，任何的Java类和JavaBean都被当成Bean处理，这些Bean通过容器管理和应用。Spring提供了两种容器类型：BeanFactory和ApplicationContext。
+
+
+
+- BeanFactory —— 基础类型IoC容器，提供完整的IoC服务支持。如果没有特殊指定，默认采用延迟初始化策略（lazy-load）。只有当客户端对象需要访问容器中的某个受管对象的时候，才对该受管对象进行初始化以及依赖注入操作。所以，相对来说，容器启动初期速度较快，所需要的资源有限。对于资源有限，并且功能要求不是很严格的场景，BeanFactory是比较合适的IoC容器选择。
+
+
+- ApplicationContext（推荐使用） —— ApplicationContext在BeanFactory的基础上构建（ApplicationContext间接继承自BeanFactory，所以说它是构建于BeanFactory之上的IoC容器。），是相对比较高级的容器实现，除了拥有BeanFactory的所有支持，ApplicationContext还提供了其他高级特性，比如事件发布、国际化信息支持等。ApplicationContext所管理的对象，在该类型容器启动之后，默认全部初始化并绑定完成。所以，相对于BeanFactory来说，ApplicationContext要求更多的系统资源，同时，因为在启动时就完成所有初始化，容器启动时间较之BeanFactory也会长一些。在那些系统资源充足，并且要求更多功能的场景中，ApplicationContext类型的容器是比较合适的选择。
+
+		//加载文件系统中的配置文件实例化
+		String conf = "C:\applicationContext.xml";
+		ApplicationContext ac = new FileSystemXmlApplicationContext(conf);
+		//加载工程classpath下的配置文件实例化
+		String conf = "applicationContext.xml";
+		ApplicationContext ac = new ClassPathXmlApplicationContext(conf);
+
+
+从本质上讲，BeanFactory和ApplicationContext仅仅只是一个维护Bean定义以及相互依赖关系的高级工厂接口。通过BeanFactory和ApplicationContext我们可以访问bean定义，首先在容器配置文件applicationContext.xml中添加Bean定义，然后再创建BeanFactory和ApplicationContext容器对象后调用getBean（） 方法获取Bean的实例即可。
+
+**II、Bean管理**
+
+**（1）Bean的实例化**
+
+Spring容器创建Bean对象的方法有以下3种：
+
+- 使用构造器来实例化
+
+		//id或name属性用于指定Bean名称，用于从Spring中查找这个Bean对象；class用于指定Bean类型，会自动调用无参数构造器创建对象
+		<bean id="calendarObj1" class="java.util.GregorianCalendar"/>
+		<bean id="calendarObj2" class="java.util.GregorianCalendar"/>
+
+- 使用静态工厂方法实例化
+
+		//id属性用于指定Bean名称；class属性用于指定Be工厂类型；factory-method属性用于指定工厂中创建Bean对象的方法，必须用static修饰的方法。
+		<bean id="calendarObj2" class="java.util.Calendar" factory-method="getInstance"/>
+
+
+- 使用实例工厂方法实例化
+
+		//id用于指定Bean名称；factory-bean属性用于指定工厂Bean对象;factory-method属性用于指定工厂中创建Bean对象的方法
+		<bean id="calendarObj3" class="java.util.GregorianCalendar"/>
+		<bean id="dateObj" factory-bean="calendarObj3" factory-method="getTime">
+
+
+（
+
+- 在Spring容器中，每个Bean都需要有名字，该名字可以用id或name属性指定，id属性比name严格，要求具有唯一性，不允许用“/”等特殊字符。
+- Bean的别名:为已定义好的Bean，在增加另外一个名字引用
+
+		<alias name="fromName" alias="toName">
+
+
+）
+
+
+**（2）Bean的作用域**
+
+Spring中为Bean定义了5中作用域，分别为singleton（单例）、prototype（原型）、request、session和global session，5种作用域说明如下：
+
+- singleton：单例模式，Spring IoC容器中只会存在一个共享的Bean实例，无论有多少个Bean引用它，始终指向同一对象。Singleton作用域是Spring中的缺省作用域，也可以显示的将Bean定义为singleton模式，配置为：
+
+		<bean id="userDao" class="com.ioc.UserDaoImpl" scope="singleton"/>
+
+- prototype:原型模式，每次通过Spring容器获取prototype定义的bean时，容器都将创建一个新的Bean实例，每个Bean实例都有自己的属性和状态，而singleton全局只有一个对象。根据经验，对有状态的bean使用prototype作用域，而对无状态的bean使用singleton作用域。
+
+
+- request：在一次Http请求中，容器会返回该Bean的同一实例。而对不同的Http请求则会产生新的Bean，而且该bean仅在当前Http Request内有效。
+
+
+- session：在一次Http Session中，容器会返回该Bean的同一实例。而对不同的Session请求则会创建新的实例，该bean实例仅在当前Session内有效。
+
+
+- global Session：在一个全局的Http Session中，容器会返回该Bean的同一个实例，仅在使用portlet context时有效。  
+
+
+
+**（3）Bean的生命周期**
+
+我们知道一个对象的生命周期：创建（实例化-初始化）-使用-销毁，而在Spring中，Bean对象周期当然遵从这一过程，但是Spring提供了许多对外接口，允许开发者对三个过程（实例化、初始化、销毁）的前后做一些操作。 （说明：在Spring Bean中，实例化是为bean对象开辟空间（具体可以理解为构造函数的调用），初始化则是对属性的初始化）
+
+
+- 指定初始化回调方法
+
+		<bean id="exampleBean" class="com.foo.ExampleBean" init-method="init"></bean>
+
+- 指定销毁回调方法，仅适用于singleton模式的bean
+
+		<bean id="exampleBean" class="com.foo.ExampleBean" destroy-method="destroy"></bean>
+
+(在顶级元素beans中的default-init-method属性可以为容器所有bean指定初始化回调方法，在顶级元素beans中的default-destroy-method属性可以为容器所有bean指定销毁回调方法)
+
+- 在ApplicationContext实现的默认行为就是在启动时将所有singleton bean 提前进行实例化，如果不想让一个singleton bean在ApplicationContext初始化时被提前实例化，可以使用bean元素的lazy-init="true"属性改变。（一个延迟初始化bean将在第一次被用到时实例化）
+
+		<bean id="exampleBean" lazy-init="true" class="com.foo.ExampleBean"></bean>
+
+(在顶级元素beans中的default-lazy-init属性可以为容器所有bean指定延迟实例化特性)
+
+- 当一个bean对另一个bean存在依赖关系时，可以利用bean元素的depends-on属性指定，当一个bean对多个bean存在依赖关系时，depends-on属性可以指定多个bean名，同逗号隔开。
+
+		<bean id="exampleBean" class="com.foo.ExampleBean" depends-on="beanOne,beanTwo"></bean>
+
+实际上，Spring Bean的生命周期远远没有我们想象的那么简单，感兴趣的可以去阅读下其源码部分，这里不再详述。（引用网上的一副流程图）
+
+![](https://images0.cnblogs.com/i/580631/201405/181453414212066.png)
+![](https://images0.cnblogs.com/i/580631/201405/181454040628981.png)
+
+
+#### 2、DI注入方式 ####
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
