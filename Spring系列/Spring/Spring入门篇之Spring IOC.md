@@ -238,16 +238,72 @@ setter注入，是通过在通过构造器、静态工厂或实例工厂实例�
 
 （1）注入基本值
 
+![](https://i.imgur.com/BGMGJLe.png)
 
+或者
+
+![](https://i.imgur.com/KAoHyzC.png)
+
+注意两种情况：
+
+- 注入空字符串
+
+![](https://i.imgur.com/vt902eQ.png)
+
+- 注入null
+
+![](https://i.imgur.com/ShX2Xnq.png)
 
 （2）注入对象
 
+注入Bean对象，定义格式有内部Bean和外部Bean两种：
 
+- 注入内部Bean
+
+![](https://i.imgur.com/D6S52Um.png)
+
+- 注入外部Bean
+
+![](https://i.imgur.com/ZZoYQsQ.png)
 
 （3）注入List集合
 
+![](https://i.imgur.com/H7j9T2Q.png)
+
+或者引用方式List集合注入（Set Map Properties都可以采用引用方式注入）
+
+![](https://i.imgur.com/fk6Y95n.png)
 
 
 （4）注入Set集合
+
+![](https://i.imgur.com/lOQGsKY.png)
+
+（5）注入Map集合
+
+![](https://i.imgur.com/1zAFhWt.png)
+
+（6）注入Properties集合
+
+![](https://i.imgur.com/o7Xnzzp.png)
+
+（7）注入Spring表达式值
+
+Spring引入了一种表达式语言，这和统一的EL在语法上很相似，这种表达式语言可以用于定义基于XML和注解配置的Bean，注入一个properties文件信息。
+
+![](https://i.imgur.com/pW5M5qR.png)
+
+
+#### 3.Spring IOC 注解方式 ####
+
+
+
+
+
+
+
+
+
+
 
 
