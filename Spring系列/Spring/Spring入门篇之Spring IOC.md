@@ -297,6 +297,82 @@ Spring引入了一种表达式语言，这和统一的EL在语法上很相似，
 #### 3.Spring IOC 注解方式 ####
 
 
+**I、组件扫描**
+
+指定一个包路径，Spring会自动扫描该包及其子包所有组件类，当发现组件类定义前有特定的注解标记时，就将该组件纳入到Spring容器。等价于原有XML配置中的<bean>定义功能。
+
+- 组件扫描可以替代大量XML配置的<bean>定义
+- 使用组件扫描，首先需要在XML配置中指定扫描类路径。
+
+		//容器实例化时会自动扫描org.example包及其子包下所有组件类
+		<context:component-scan base-package="org.example">
+
+
+- 指定扫描类路径后，并不是该路径下所有组件类都扫描到Spring容器的，只有在组件类定义前面有以下注解标记时，才会扫描到Spring容器。
+
+	![](https://i.imgur.com/muGahVj.png)
+
+- 当一个组件在扫描过程中被检测到时，会生成一个默认id值，默认id为小写开头的类名。也可以在注解标记中自定义id.
+	
+	![](https://i.imgur.com/TxetQhs.png)
+
+- 通常受Spring管理的组件，默认的作用域是"singleton".如果需要其他的作用域可以使用@Scope注解，只要在注解中提供作用域的名称即可。
+
+	![](https://i.imgur.com/JJrv3MY.png)
+
+
+**II、注解注入**
+
+（1）@Autowired/@Qualifier（不推荐使用，建议使用@Resource）
+
+- @Autowired 注解标记可以用在字段定义或setter方法定义前面，默认按类型匹配注入。
+- @Autowired当遇到多个匹配Bean时注入会发生错误，可以使用@qualifier配合@Autowired来指定名称。
+
+	![](https://i.imgur.com/USsPM8T.png)
+
+
+
+（2）@Resource
+
+@Resource 注解标记也可以用在字段定义或setter方法定义前面，默认首先按名称匹配注入，然后类型匹配注入。
+
+JSR-250标准注解，推荐使用它来代替Spring专有的@Autowired注解。@Resource的作用相当于@Autowired，只不过 @Autowired按byType自动注入，而@Resource默认按byName自动注入罢了。@Resource有两个属性是比较重要的，分别是 name和type，Spring将 @Resource注解的name属性解析为bean的名字，而type属性则解析为bean的类型。所以如果使用name属性，则使用byName的自动注入策略，而使用type属性时则使用byType自动注入策略。如果既不指定name也不指定type属性，这时将通过反射机制使用byName自动注入策略。
+
+@Resource装配顺序： 
+    
+
+- a.如果同时指定了name和type，则从Spring上下文中找到唯一匹配的bean进行装配，找不到则抛出异常 
+- b.如果指定了name，则从上下文中查找名称（id）匹配的bean进行装配，找不到则抛出异常 
+- c.如果指定了type，则从上下文中找到类型匹配的唯一bean进行装配，找不到或者找到多个，都会抛出异常 
+- d.如果既没有指定name，又没有指定type，则自动按照byName方式进行装配（见b）；如果没有匹配，则回退为一个原始类型（UserDao）进行匹配，如果匹配则自动装配； 
+
+
+
+
+（3）@Inject/@Named
+
+@Inject注解标记是Spring3.0开始增添的对JSR-330标准的支持，使用前需要添加JSR-330的jar包，使用方法与@Autowired相似。@Inject当遇到多个匹配Bean时注入会发生错误，可以使用@Named指定名称限定。
+
+![](https://i.imgur.com/9lVUx2s.png)
+
+
+附：@Value
+
+@Value注解可以注入Spring表达式值，使用方法：
+
+- 首先在XML配置中指定要注入的properties文件
+
+	![](https://i.imgur.com/Op8tvCB.png)
+
+- 然后在setter方法前使用@Value注解
+
+	![](https://i.imgur.com/5KVx7iU.png)
+
+
+
+
+
+
 
 
 
