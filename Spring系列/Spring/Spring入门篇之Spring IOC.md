@@ -182,25 +182,72 @@ Spring中为Bean定义了5中作用域，分别为singleton（单例）、protot
 
 #### 2、DI注入方式 ####
 
+Spring IOC容器的依赖有两层含义：Bean依赖容器和容器注入Bean的依赖资源：
+
+
+- a、Bean依赖容器：也就是说Bean要依赖于容器，这里的依赖是指容器负责创建Bean并管理Bean的生命周期，正是由于由容器来控制创建Bean并注入依赖，也就是控制权被反转了，这也正是IOC名字的由来，此处的有依赖是指Bean和容器之间的依赖关系。
+- b、容器注入Bean的依赖资源：容器负责注入Bean的依赖资源，依赖资源可以是Bean、外部文件、常量数据等，在Java中都反映为对象，并且由容器负责组装Bean之间的依赖关系，此处的依赖是指Bean之间的依赖关系，可以认为是传统类与类之间的“关联”、“聚合”、“组合”关系。
+
+Spring IOC容器注入依赖资源主要有以下两种基本实现方式：
+
+
+- 构造器注入：就是容器实例化Bean时注入那些依赖，通过在在Bean定义中指定构造器参数进行注入依赖，包括实例工厂方法参数注入依赖，但静态工厂方法参数不允许注入依赖；
+- setter注入：通过setter方法进行注入依赖；
+
+
+**I、构造器注入**
+
+使用构造器注入通过配置构造器参数实现，构造器参数就是依赖。除了构造器方式，还有静态工厂、实例工厂方法可以进行构造器注入。
+
+![](https://i.imgur.com/5YDwnRM.png)
+
+构造器注入可以根据参数索引注入、参数类型注入或Spring3支持的参数名注入，但参数名注入是有限制的，需要使用在编译程序时打开调试模式（即在编译时使用“javac –g:vars”在class文件中生成变量调试信息，默认是不包含变量调试信息的，从而能获取参数名字，否则获取不到参数名字）或在构造器上使用@ConstructorProperties（java.beans.ConstructorProperties）注解来指定参数名。
+
+（1）根据参数索引（顺序）注入，使用标签“<constructor-arg index="1" value="1"/>”来指定注入的依赖，其中“index”表示索引，从0开始，即第一个参数索引为0，“value”来指定注入的常量值，配置方式如下：
+
+![](https://i.imgur.com/k66Eval.jpg)
+
+
+（2）根据参数类型进行注入，使用标签“<constructor-arg type="java.lang.String" value="Hello World!"/>”来指定注入的依赖，其中“type”表示需要匹配的参数类型，可以是基本类型也可以是其他类型，如“int”、“java.lang.String”，“value”来指定注入的常量值，配置方式如下：
+
+![](https://i.imgur.com/SHPhHZm.jpg)
+
+（3）根据参数名进行注入，使用标签“<constructor-arg name="message" value="Hello World!"/>”来指定注入的依赖，其中“name”表示需要匹配的参数名字，“value”来指定注入的常量值，配置方式如下：
+
+![](https://i.imgur.com/uPfZMUD.jpg)
+
+
+附：构造器方式引入其他Bean
+
+1）.通过” <constructor-arg>”标签的ref属性来引用其他Bean，这是最简化的配置：
+
+![](https://i.imgur.com/EAIJcn9.jpg)
+
+
+2）.通过”<constructor-arg>”标签的子<ref>标签来引用其他Bean，使用bean属性来指定引用的Bean
+
+![](https://i.imgur.com/V8Q8IBq.jpg)
+
+
+**II、Setter注入**
+
+setter注入，是通过在通过构造器、静态工厂或实例工厂实例好Bean后，通过调用Bean类的setter方法进行注入依赖，setter注入方式只有一种根据setter名字进行注入。如图所示：
+
+![](https://i.imgur.com/HzKIVib.jpg)
+
+
+（1）注入基本值
 
 
 
+（2）注入对象
 
 
 
+（3）注入List集合
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+（4）注入Set集合
 
 
