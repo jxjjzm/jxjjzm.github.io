@@ -81,14 +81,18 @@ Spring MVC是一种基于Java的实现了MVC模式的请求驱动（请求驱动
 
 ### 二、Spring MVC 实战###
 
-TODO：
+#### 1.xml常见配置 ####
 
+（1）DispatcherServlet控制器配置
 
+![](https://i.imgur.com/sRydfH4.png)
 
 #### 2.Spring MVC 常用注解 ####
 
-(1) @RequestMapping
- 
+**(1) @RequestMapping**
+
+ ![](https://i.imgur.com/PDZYf3W.png) 
+
 - @RequestMapping是一个用来处理请求地址映射的注解，可用于类或方法上。用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。
 - 开启 @RequestMapping注解映射，需要在Spring的XML配置文件中定义RequestMappingHandlerMapping（类定义前）和 RequestMappingHandlerAdapter（方法定义前）两个bean组件
 - Spring 3.1版本之前需要定义 DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter两个组件。
