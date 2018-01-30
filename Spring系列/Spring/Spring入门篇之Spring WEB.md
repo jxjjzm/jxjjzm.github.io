@@ -83,7 +83,7 @@ Spring MVC是一种基于Java的实现了MVC模式的请求驱动（请求驱动
 
 #### 1.xml常见配置 ####
 
-（1）DispatcherServlet控制器配置
+**（1）DispatcherServlet控制器配置**
 
 ![](https://i.imgur.com/sRydfH4.png)
 
