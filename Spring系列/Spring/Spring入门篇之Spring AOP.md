@@ -48,7 +48,7 @@ AOP（Aspect-OrientedProgramming，面向方面编程），可以说是OOP（Obj
 
 - （1）创建方面组件：创建一个类，充当方面组件，实现通用业务逻辑
 - （2）声明方面组件：在applicationContext.xml中声明方面组件
-- （3）使用方面组件：在applicationContext.xml中奖方面组件作用到目标组件的方法上，并设置通知类型以确认方面组件调用的时机。
+- （3）使用方面组件：在applicationContext.xml中将方面组件作用到目标组件的方法上，并设置通知类型以确认方面组件调用的时机。
 
 
 
