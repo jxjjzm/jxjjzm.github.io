@@ -20,7 +20,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 	* [专题之Java8](#jxjjzm-java-java8)
 	* [专题之Java并发](#jxjjzm-java-juc)
 	* [专题之JVM](#jxjjzm-java-jvm)
-	* [专题之IO]（#jxjjzm-java-io）
+	* [专题之IO](#jxjjzm-java-io)
 * [Distributed System 系列](#jxjjzm-distributed-system)
 	* [分布式技术杂谈](#jxjjzm-distributed-system-talk)
 	* [Zookeeper](#jxjjzm-distributed-system-zookeeper)
