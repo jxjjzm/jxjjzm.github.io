@@ -1046,7 +1046,12 @@ JDK1.8 对rehash(重新哈希)也做了些优化：
 
 
 
+### 附录 ###
 
+
+
+- 1.这是一份详细&全面的HashMap 1.7 源码分析  ：[ http://t.cn/Rnz4gIZ]( http://t.cn/Rnz4gIZ)
+- 2.Java源码分析：关于 HashMap 1.8 的重大更新 ： [https://juejin.im/post/5aa5d8d26fb9a028d2079264](https://juejin.im/post/5aa5d8d26fb9a028d2079264)
 
 
 

@@ -66,7 +66,7 @@
 - 如果节点是红色的，则它的子节点必须是黑色的（反之则不然）。
 - 从根到叶节点或空子节点的每条路径，必须包含相同数目的黑色节点（黑色高度必须相同）。
 
-说明：
+说明：	
 
 
 - 重复的关键字：如果有多于一个数据项的关键字值相同，把有相同关键字的数据项分配到其他也有相同关键字数据项的两侧是很重要的。这也就是说，如果关键字的序列为50，50，50，要把第二个50放到第一个50的右边，并且把第三个50放到第一个50的左边。否则，树将不平衡。
@@ -77,7 +77,6 @@
 
 
 ![](https://github.com/julycoding/The-Art-Of-Programming-By-July/raw/master/ebook/images/rbtree/1.png)
-
 
 [---> 教你透彻了解红黑树](https://github.com/julycoding/The-Art-Of-Programming-By-July/blob/master/ebook/zh/03.01.md)
 
