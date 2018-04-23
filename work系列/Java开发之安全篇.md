@@ -1,9 +1,7 @@
 ### Java开发之安全篇 ###
 ***
 
-参考链接：[https://mp.weixin.qq.com/s/QIqGGFJd8bcrHfJoSiwViA](https://mp.weixin.qq.com/s/QIqGGFJd8bcrHfJoSiwViA)
 
-http://k.2dfire.net/pages/viewpage.action?pageId=12353638
 
 ### 一、SQL注入 ###
 
@@ -231,8 +229,12 @@ DDoS的攻击有很多种类型,如依赖蛮力的ICMP Flood、UDP Flood等等,�
 
 - 密码安全：DB中存放的密码必须是加密的，客户端的密码需要加密之后再传给服务端，服务端返回给客户端的数据中不要包含密码。
 - Cookie：防止cookie中用户的敏感信息泄漏, 我们需要对cookie进行高强度的加密, 同时将设置httpOnly的属性。
+- Access Control：业务逻辑中权限控制, 对数据库任何操作都需要做身份认证，特别是UPDATE、 DELETE、INSERT的时候更需要注意.
+actioin里取得当前登录用户的session信息, 从session中取得当前用户loginId，根据loginId及被操作数据的ower对比结果,进行数据更新,删除.另外也可以在sql里增加判断条件来控制,如在where条件中增加login_id='xxx'
 
 
+
+参考链接：[https://mp.weixin.qq.com/s/QIqGGFJd8bcrHfJoSiwViA](https://mp.weixin.qq.com/s/QIqGGFJd8bcrHfJoSiwViA)
 
 
 
