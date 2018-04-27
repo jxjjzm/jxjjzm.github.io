@@ -86,6 +86,8 @@ ExchangeClient, ExchangeServe
 
 ![](https://i.imgur.com/TatpHFr.png)
 
+![](http://dubbo.apache.org/books/dubbo-dev-book/sources/images/dubbo-modules.jpg)
+
 模块说明：
 
 
@@ -107,7 +109,8 @@ ExchangeClient, ExchangeServe
 - transport层和exchange层都放在remoting模块中，为rpc调用的通讯基础。
 - serialize层放在common模块中，以便更大程度复用。
 
-![](https://i.imgur.com/iATgHlv.png)
+
+
 
 
 
