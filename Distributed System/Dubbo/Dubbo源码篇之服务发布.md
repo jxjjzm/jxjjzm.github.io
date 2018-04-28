@@ -162,7 +162,7 @@ Dubbo服务暴露就是由ServiceBean开始处理逻辑。如上图所示，Serv
 ### 二、Invoker------>Protocol------>Exporter ###
 
 
-接前一部分，我们看下DubboProtocol中的export方法（这才是Dubbo服务暴露的核心所在）：
+接前一部分，以DubboProtocol为例（RegistryProtocol有时间待续），我们看下DubboProtocol中的export方法（这才是Dubbo服务暴露的核心所在）：
 
 	public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 	       
@@ -278,24 +278,23 @@ getTransporter()获取的Transporter实例来源于扩展配置，默认返回�
 
 ### 总结： ###
 
-首先，我们引用Dubbo官方文档中两幅图来对Dubbo服务暴露作一个初步总结：
 
 ![](https://upload-images.jianshu.io/upload_images/1041678-e21933b0fa25ffa8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/700)
 
-
+- Dubbo服务暴露时序图：
 
 ![](https://upload-images.jianshu.io/upload_images/1041678-f90a214d6083df42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/700)
 
 
 
+- Dubbo服务暴露活动图：
+
+![](https://img-blog.csdn.net/20141201192637144?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVob25nd2VpX3poYW5xaXU=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
+其实，Dubbo服务暴露整体来看也就是两大部分（1）Service To Invoker （2）Invoker To Export ，简单概括如下图所示：
+
 ![](https://i.imgur.com/jU1dpmZ.png)
-
-
-
-
-
-
-
 
 
 
