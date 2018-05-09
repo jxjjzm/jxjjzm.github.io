@@ -1,4 +1,4 @@
-### Spring入门篇之Spring 事务 ###
+### Spring入门篇之Spring 事务管理 ###
 ***
 
 

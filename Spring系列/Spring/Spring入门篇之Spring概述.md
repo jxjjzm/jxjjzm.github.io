@@ -66,15 +66,12 @@ Spring 框架是一个分层架构，由 7 个定义良好的模块组成。Spri
 ### 三、Spring 家族 ###
 
 
-- Spring Security（原来的Acegi Security）。Spring Security由原来的Acegi Security发展而来，主要为基于Spring框架的企业级应用程序提供安全解决方案。Spring Security 2.0发布后在原来Acegi Security 1.0的基础上又添加了很多富有吸引力的特性，包括简化配置、面向RESTful请求的安全认证、与Spring Web Flow和Spring Web Services等项目的良好集成等，可以说为基于Spring框架的企业级应用提供了一站式的安全方面的解决方案。
-
-
-- Spring Batch⑤。当意识到企业应用中批处理业务所占的市场份额不容小觑之后，Spring Batch
-开始浮出水面，它是构建在Spring框架之上的一套轻量级批处理开发框架，由SpringSource和
-埃森哲（Accenture）合力打造。如果你还在为无法找到一款满意的开源批处理开发框架而烦
-恼，也许Spring Batch会让你的烦恼顷刻间烟消云散。
-
-
+- Spring Security（原来的Acegi Security） ： 通过认证和授权保护应用。
+- Spring Batch ： 简化及优化大量数据的批处理操作。
+- Spring boot ： 使用默认开发配置来实现快速开发。
+- Spring Cloud ： 为分布式系统开发提供工具集。
+- Spring Data ： 对主流的关系型和Nosql数据库的支持。
+- ......
 
 
 
