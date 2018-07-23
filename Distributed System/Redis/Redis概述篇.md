@@ -14,7 +14,7 @@ Redis是一个**完全开源免费的、遵守BSD协议、使用ANSI C语言编�
 
 redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部分场合可以对关系数据库起到很好的补充作用。它提供了Java，C/C++，C#，PHP，JavaScript，Perl，Object-C，Python，Ruby，Erlang等客户端，使用很方便。
 
-#### 1.Redis特性（Feature） ####
+#### 1.Redis特性（面试题：使用redis有哪些好处？） ####
 
 - **性能极高（所有数据都在内存中）** ：Redis能读的速度是110000次/s,写的速度是81000次/s ;
 - **丰富的数据类型**：Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储；
@@ -35,7 +35,7 @@ Redis的版本规则如下————次版本号（第一个小数点后的数
 
 ![](https://i.imgur.com/Gif1TRG.png)
 
-Redis VS Memcached ：
+**Redis VS Memcache(面试题：Memcache与Redis的区别都有哪些？) ：**
 
 - **数据类型支持不同** ———— memcached 仅支持简单的key-value结构的数据类型---String；Redis支持丰富的数据类型：String、Hash、List、Set和Sorted Set.
 - **数据持久化支持** ———— memcached 所有数据都存储在内存中，不支持数据的持久化，所以一般只用作缓存；Redis 虽然是基于内存的存储系统，但是它本身是支持内存数据的持久化的，而且提供两种主要的持久化策略：RDB快照和AOF日志，所以Redis既可以用作缓存，也可以用作存储。
@@ -160,6 +160,10 @@ Redis 中的列表是一个有序的字符串集合，您可以向其中添加�
 - [Redis底层原理](https://blog.csdn.net/wcf373722432/article/details/78678504)
 
 ### 三、Redis 持久化方式 ###
+
+Redis支持两种持久化方式：RDB和AOF。（详细请参详:[Redis使用篇——Redis 持久化方式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%20%E6%8C%81%E4%B9%85%E5%8C%96(Persistence).md)）
+
+
 
 ### 三、Redis Java Client ———— Jedis ###
 
