@@ -9,7 +9,7 @@ Redis是一个**完全开源免费的、遵守BSD协议、使用ANSI C语言编�
 
 与memcached一样，为了保证效率，Redis采用了**内存中（in-memory）数据集（dataset）的方式** ,即数据都是缓存在内存中的。同时，Redis支持数据的**持久化**，你可以每间隔一段时间将数据集转存到磁盘上（snapshot）或者在日志尾部追加每一条操作命令(append only file,aof).Redis 同样支持主从复制（master-slave replication）,并且具有非常快速的非阻塞首次同步（non_locking first synchronization）、网络断开自动重连等功能。同时Redis还具有其他的一些特性，其中包括简单的事务支持、发布订阅(pub/sub)、管道（pipeline）和虚拟内存(vm)等
 
-除此之外，**Redis 还内置了 复制（replication），LUA脚本（Lua scripting）， LRU驱动事件（LRU eviction），事务（transactions） 和不同级别的 磁盘持久化（persistence）， 并通过 Redis哨兵（Sentinel）和自动 分区（Cluster）提供高可用性（high availability）**。
+除此之外，**Redis 还内置了 复制（replication），LUA脚本（Lua scripting）， LRU驱动事件（LRU eviction），事务（transactions） 和不同级别的磁盘持久化（persistence）， 并通过 Redis哨兵（Sentinel）和自动 分区（Cluster）提供高可用性（high availability）**。
 
 
 redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部分场合可以对关系数据库起到很好的补充作用。它提供了Java，C/C++，C#，PHP，JavaScript，Perl，Object-C，Python，Ruby，Erlang等客户端，使用很方便。
@@ -55,11 +55,11 @@ memcached本身并不支持分布式，因此只能在客户端通过像一致�
 
 （1）Memcached内存管理机制
 
-Memcached默认使用Slab Allocation机制管理内存，其主要思想是按照预先规定的大小，将分配的内存分割成特定长度的块以存储相应长度的key-value数据记录，以完全解决内存碎片问题。Slab Allocation机制只为存储外部数据而设计，也就是说所有的key-value数据都存储在Slab Allocation系统里，而Memcached的其它内存请求则通过普通的malloc/free来申请，因为这些请求的数量和频率决定了它们不会对整个系统的性能造成影响Slab Allocation的原理相当简单。 如图所示，它首先从操作系统申请一大块内存，并将其分割成各种尺寸的块Chunk，并把尺寸相同的块分成组Slab Class。其中，Chunk就是用来存储key-value数据的最小单位。每个Slab Class的大小，可以在Memcached启动的时候通过制定Growth Factor来控制。假定图中Growth Factor的取值为1.25，如果第一组Chunk的大小为88个字节，第二组Chunk的大小就为112个字节，依此类推。
+Memcached默认使用Slab Allocation机制管理内存，其主要思想是按照预先规定的大小，将分配的内存分割成特定长度的块以存储相应长度的key-value数据记录，以完全解决内存碎片问题。Slab Allocation机制只为存储外部数据而设计，也就是说所有的key-value数据都存储在Slab Allocation系统里，而Memcached的其它内存请求则通过普通的malloc/free来申请，因为这些请求的数量和频率决定了它们不会对整个系统的性能造成影响。Slab Allocation的原理相当简单， 如图所示，它首先从操作系统申请一大块内存，并将其分割成各种尺寸的块Chunk，并把尺寸相同的块分成组Slab Class。其中，Chunk就是用来存储key-value数据的最小单位。每个Slab Class的大小，可以在Memcached启动的时候通过制定Growth Factor来控制。假定图中Growth Factor的取值为1.25，如果第一组Chunk的大小为88个字节，第二组Chunk的大小就为112个字节，依此类推。
 
 ![](http://www.biaodianfu.com/wp-content/uploads/2014/01/Slab-Allocation.jpg)
 
-当Memcached接收到客户端发送过来的数据时首先会根据收到数据的大小选择一个最合适的Slab Class，然后通过查询Memcached保存着的该Slab Class内空闲Chunk的列表就可以找到一个可用于存储数据的Chunk。当一条数据库过期或者丢弃时，该记录所占用的Chunk就可以回收，重新添加到空闲列表中。从以上过程我们可以看出Memcached的内存管理制效率高，而且不会造成内存碎片，但是它最大的缺点就是会导致空间浪费。因为每个Chunk都分配了特定长度的内存空间，所以变长数据无法充分利用这些空间。如图 所示，将100个字节的数据缓存到128个字节的Chunk中，剩余的28个字节就浪费掉了。
+当Memcached接收到客户端发送过来的数据时首先会根据收到数据的大小选择一个最合适的Slab Class，然后通过查询Memcached保存着的该Slab Class内空闲Chunk的列表就可以找到一个可用于存储数据的Chunk。当一条数据库过期或者丢弃时，该记录所占用的Chunk就可以回收，重新添加到空闲列表中。从以上过程我们可以看出Memcached的内存管理制效率高，而且不会造成内存碎片，但是它最大的缺点就是会导致空间浪费。因为每个Chunk都分配了特定长度的内存空间，所以变长数据无法充分利用这些空间。如图所示，将100个字节的数据缓存到128个字节的Chunk中，剩余的28个字节就浪费掉了。
 
 ![](http://www.biaodianfu.com/wp-content/uploads/2014/01/Chunk.png)
 
@@ -75,7 +75,7 @@ Redis的内存管理主要通过源码中zmalloc.h和zmalloc.c两个文件来实
 （在Redis中，并不是所有的数据都一直存储在内存中的。这是和Memcached相比一个最大的区别。当物理内存用完时，Redis可以将一些很久没用到的value交换到磁盘。Redis只会缓存所有的key的信息，如果Redis发现内存的使用量超过了某一个阀值，将触发swap的操作，Redis根据“swappability = age*log(size_in_memory)”计算出哪些key对应的value需要swap到磁盘。然后再将这些key对应的value持久化到磁盘中，同时在内存中清除。这种特性使得Redis可以保持超过其机器本身内存大小的数据。当然，机器本身的内存必须要能够保持所有的key，毕竟这些数据是不会进行swap操作的。同时由于Redis将内存中的数据swap到磁盘中的时候，提供服务的主线程和进行swap操作的子线程会共享这部分内存，所以如果更新需要swap的数据，Redis将阻塞这个操作，直到子线程完成swap操作后才可以进行修改。当从Redis中读取数据的时候，如果读取的key对应的value不在内存中，那么Redis就需要从swap文件中加载相应数据，然后再返回给请求方。 这里就存在一个I/O线程池的问题。在默认的情况下，Redis会出现阻塞，即完成所有的swap文件加载后才会相应。这种策略在客户端的数量较小，进行批量操作的时候比较合适。但是如果将Redis应用在一个大型的网站应用程序中，这显然是无法满足大并发的情况的。所以Redis运行我们设置I/O线程池的大小，对需要从swap文件中加载相应数据的读取请求进行并发操作，减少阻塞的时间。）
 
 
-- **网络IO模型不同** ———— memcached 是多线程、非阻塞IO复用的网络模型，分为监听主线程（master）和工作子线程（worker）.主线程监听端口、建立连接，然后顺序分配给各个工作线程。每个工作线程有一个event loop，它们服务不同的客户端；而Redis 使用单线程（redis也是多线程的，只不过除了主线程以外，其他线程没有event loop，只是会进行一些后台存储工作）的非阻塞IO多路复用的网络模型。
+- **网络IO模型不同** ———— memcached 是多线程、非阻塞IO复用的网络模型，分为监听主线程（master）和工作子线程（worker）.主线程监听端口、建立连接，然后顺序分配给各个工作线程。每个工作线程有一个event loop，它们服务不同的客户端；而Redis 使用单线程的非阻塞IO多路复用的网络模型。
 
 
 ### 二、Redis 数据类型 ###
@@ -140,7 +140,7 @@ Redis 中的列表是一个有序的字符串集合，您可以向其中添加�
 
 - 常用命令：sadd/srem/spop/sdiff/sdiffstore/sinter/sinterstore/smove/scard/smembers/sismember/srandmember/sunion/sunionstore等；(详细请参考：[Redis命令参考](http://redisdoc.com/))
 - 应用场景：Redis set对外提供的功能与list类似是一个列表的功能，特殊之处在于set是可以自动排重的，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set提供了判断某个成员是否在一个set集合内的重要接口，这个也是list所不能提供的；
-- 实现方式：set 的内部实现是一个 value永远为null的HashMap，实际就是通过计算hash的方式来快速排重的，这也是set能提供判断一个成员是否在集合内的原因。
+- 实现方式：set 的内部实现是一个value永远为null的HashMap，实际就是通过计算hash的方式来快速排重的，这也是set能提供判断一个成员是否在集合内的原因。
 
 
 
@@ -153,6 +153,13 @@ Redis 中的列表是一个有序的字符串集合，您可以向其中添加�
 - 应用场景：Redis sorted set的使用场景与set类似，区别是set不是自动有序的，而sorted set可以通过用户额外提供一个优先级(score)的参数来为成员排序，并且是插入有序的，即自动排序。当你需要一个有序的并且不重复的集合列表，那么可以选择sorted set数据结构，比如twitter 的public timeline可以以发表时间作为score来存储，这样获取时就是自动按时间排好序的。
 - 实现方式：Redis sorted set的内部使用HashMap和跳跃表(SkipList)来保证数据的存储和有序，HashMap里放的是成员到score的映射，而跳跃表里存放的是所有的成员，排序依据是HashMap里存的score,使用跳跃表的结构可以获得比较高的查找效率，并且在实现上比较简单。
 
+
+附录：
+
+- [通俗易懂的Redis数据结构基础教程](https://juejin.im/post/5b53ee7e5188251aaa2d2e16)
+- [Redis底层原理](https://blog.csdn.net/wcf373722432/article/details/78678504)
+
+### 三、Redis 持久化方式 ###
 
 ### 三、Redis Java Client ———— Jedis ###
 
@@ -183,12 +190,13 @@ Jedis是一个小而全的Redis Java Client，很容易使用。先来看下Jedi
 附：
 
 
-- Redis 官网： [http://redis.io](http://redis.io)
-- Redis 中文官方网站：[http://www.redis.cn/](http://www.redis.cn/)
-- Redis源码脱管： [https://github.com/antirez/redis](https://github.com/antirez/redis)
-- Jedis源码托管 ：[https://github.com/xetorthio/jedis](https://github.com/xetorthio/jedis)
-- Redis设计与实现： [http://redisbook.readthedocs.io/en/latest/](http://redisbook.readthedocs.io/en/latest/)
-- Redis命令参考： [http://redisdoc.com/](http://redisdoc.com/)
+- [Redis官网](https://redis.io/)
+- [Redis中文官方网站](http://www.redis.cn/)
+- [Redis源码脱管](https://github.com/antirez/redis)
+- [Jedis源码托管](https://github.com/xetorthio/jedis)
+- [Redis设计与实现](http://redisbook.readthedocs.io/en/latest/)
+- [Redis命令参考](http://redisdoc.com/)
+- [Redis教程](http://www.runoob.com/redis/redis-tutorial.html)
 
 
 
