@@ -21,7 +21,7 @@ redis的出现，很大程度补偿了memcached这类key/value存储的不足，
 - **丰富的功能** ：缓存、队列、消息发布订阅、支持key的生存时间（数据过期时间支持）、按照一定的规则删除相应的键、不完全的事务支持等；
 - **原子性**： Redis的所有操作都是原子性的，同时Redis还支持对几个操作全并后的原子性执行；
 - **内存存储与持久化** ：Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用；
-- **主从复制**：Redis支持数据的备份，即master-slave模式的数据备份。
+- **[主从复制](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%EF%BC%88master-slave%20replication%EF%BC%89.md)**：Redis支持数据的备份，即master-slave模式的数据备份。
 
 
 #### 2.Redis版本说明 ####
@@ -41,6 +41,7 @@ Redis的版本规则如下————次版本号（第一个小数点后的数
 - **数据持久化支持** ———— memcached 所有数据都存储在内存中，不支持数据的持久化，所以一般只用作缓存；Redis 虽然是基于内存的存储系统，但是它本身是支持内存数据的持久化的，而且提供两种主要的持久化策略：RDB快照和AOF日志，所以Redis既可以用作缓存，也可以用作存储。
 - **主从复制**（master-slave replication）———— Redis支持数据的复制（备份），即master-slave模式的数据复制（备份）；memcached则不支持。
 - **消息订阅发布**（pub/sub）———— Redis实现了消息的订阅/发布功能，memcached则没有。
+- **value大小** ———— redis最大可以达到1GB，而memcache只有1MB
 - **集群管理的不同**
 
 memcached本身并不支持分布式，因此只能在客户端通过像一致性哈希算法这样的分布式算法来实现memcached的分布式存储。下图给出了Memcached的分布式存储实现架构。当客户端向Memcached集群发送数据之前，首先会通过内置的分布式算法计算出该条数据的目标节点，然后数据会直接发送到该节点上存储。但客户端查询数据时，同样要计算出查询数据所在的节点，然后直接向该节点发送查询请求以获取数据。
@@ -79,6 +80,8 @@ Redis的内存管理主要通过源码中zmalloc.h和zmalloc.c两个文件来实
 
 
 ### 二、Redis 数据类型 ###
+
+**（面试题：Redis支持哪些数据类型，底层数据结构是如何实现的？）**
 
 ![](https://i.imgur.com/P5V49Gf.png)
 
@@ -163,9 +166,17 @@ Redis 中的列表是一个有序的字符串集合，您可以向其中添加�
 
 Redis支持两种持久化方式：RDB和AOF。（详细请参详:[Redis使用篇——Redis 持久化方式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%20%E6%8C%81%E4%B9%85%E5%8C%96(Persistence).md)）
 
+### 四、Redis 的回收策略 ###
+
+- volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
+- volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
+- volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
+- allkeys-lru：从数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰
+- allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
+- no-enviction（驱逐）：禁止驱逐数据
 
 
-### 三、Redis Java Client ———— Jedis ###
+### 五、Redis Java Client ———— Jedis ###
 
 Redis支持的几种不同语言客户端：
 
@@ -189,6 +200,7 @@ Jedis是一个小而全的Redis Java Client，很容易使用。先来看下Jedi
 ![](https://i.imgur.com/rr0vp9Z.png)
 
 ![](https://i.imgur.com/6s3gpSJ.png)
+
 
 
 附：
