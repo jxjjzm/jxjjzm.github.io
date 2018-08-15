@@ -46,7 +46,7 @@
 
 #### 2.蚂蚁金服开放平台 ####
 
-![](https://gw.alipayobjects.com/os/skylark-tools/public/files/c18dc7341cd542343054581ba092ee6b)
+![](https://gw.alipayobjects.com/os/skylark-tools/public/files/d1aa377ec1777ba2c53fcefeb3f96d8a)
 
 
 - [蚂蚁金服开放平台](https://open.alipay.com/platform/home.htm)

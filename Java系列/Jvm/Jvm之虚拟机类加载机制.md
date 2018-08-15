@@ -3,11 +3,7 @@
 
 ### 一、Class文件基本组织结构 ###
 
-作为Java程序猿，我们知道，我们写好的Java源文件，最后会被Java编译器编译成后缀为.class的文件，该类型的文件是由字节组成的文件，又叫字节码文件。那么，class字节码文件里面到底是有什么呢？它又是怎样组织的呢？
-
-![](http://img.blog.csdn.net/20141008125149484?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbHVhbmxvdWlz/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
-
-本文重点针对虚拟机类加载机制做讲解，再此不继续深究class文件基本组织结构，如需详细了解可以参考《Java虚拟机原理图解》系列博文： [《Java虚拟机原理图解》](http://blog.csdn.net/u010349169/article/category/2620885)
+作为Java程序猿，我们知道，我们写好的Java源文件，最后会被Java编译器编译成后缀为.class的文件，该类型的文件是由字节组成的文件，又叫字节码文件。那么，class字节码文件里面到底是有什么呢？它又是怎样组织的呢？本文重点针对虚拟机类加载机制做讲解，再此不深究class文件基本组织结构，如需详细了解可以参考《Java虚拟机原理图解》系列博文： [《Java虚拟机原理图解》](http://blog.csdn.net/u010349169/article/category/2620885)
 
 
 ### 二、类加载 ###
@@ -299,7 +295,9 @@ ClassLoader源码分析：
 
 
 
+### 附录 ###
 
+- [深入理解Java类加载器(ClassLoader)](https://blog.csdn.net/javazejian/article/details/73413292)
 
 
 
