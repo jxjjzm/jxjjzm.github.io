@@ -418,6 +418,8 @@ G1收集器是垃圾收集器理论进一步发展的产物，是目前技术发
 
 - [JVM知识点精华汇总](https://mp.weixin.qq.com/s/Km_EVow1_R-lztvmq7uMnw)
 - [Java虚拟机](https://github.com/CyC2018/Interview-Notebook/blob/master/notes/Java%20%E8%99%9A%E6%8B%9F%E6%9C%BA.md)
+- [你假笨](https://mp.weixin.qq.com/mp/homepage?__biz=MzIzNjI1ODc2OA==&hid=3&sn=bca0355516d60449a140b8ad12f3d89f#wechat_redirect)
+-  [匠心零度](http://mp.weixin.qq.com/mp/homepage?__biz=MzU2NjIzNDk5NQ==&hid=1&sn=41380a4a375614ac10eda44613795dd0&scene=1&devicetype=android-24&version=26060739&lang=zh_CN&nettype=WIFI&ascene=7&session_us=gh_934b01732546&wx_header=1)
 
 
 

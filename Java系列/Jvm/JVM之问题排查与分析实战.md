@@ -173,7 +173,6 @@
 - [实战调优Parallel收集器](http://www.wangtianyi.top/blog/2018/07/27/jvmdiao-you-ru-men-(er-):shi-zhan-diao-you-parallelshou-ji-qi/)
 - [一个Java内存泄漏的排查案例A](https://juejin.im/entry/5b2c9a376fb9a00e5326e05e?utm_medium=be&utm_source=weixinqun)
 - [一个Java内存泄漏的排查案例B](https://blog.csdn.net/aasgis6u/article/details/54928744)
-- [阿里云ECS的CPU100%排查](https://mp.weixin.qq.com/s/KckXQ2vvnu4HUyyu7Xpslw)
 - [Java性能调优](https://juejin.im/post/5a0ab41251882578da0d631c)
 -  [你假笨](https://mp.weixin.qq.com/mp/homepage?__biz=MzIzNjI1ODc2OA==&hid=3&sn=bca0355516d60449a140b8ad12f3d89f#wechat_redirect)
 -  [匠心零度](http://mp.weixin.qq.com/mp/homepage?__biz=MzU2NjIzNDk5NQ==&hid=1&sn=41380a4a375614ac10eda44613795dd0&scene=1&devicetype=android-24&version=26060739&lang=zh_CN&nettype=WIFI&ascene=7&session_us=gh_934b01732546&wx_header=1)

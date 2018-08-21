@@ -1,4 +1,4 @@
-### Jvm之虚拟机性能监控命令与故障处理工具 ###
+### Jvm之虚拟机性能监控命令与故障处理工具、性能调优 ###
 
 ***
 ### 一、JDK命令行工具 ###
@@ -164,11 +164,11 @@ VM配置方面，一般情况可以先用默认配置（基本的一些初始参
 - 尽量避免长时间等待外部资源（数据库、网络、设备资源等）的情况，缩小对象的生命周期，避免进入老年代，如果不能及时返回结果可以适当采用异步处理的方式等。
 
 
+### 附录 ###
 
-
-
-
-
+- [Jvm调优之命令大全](http://www.cnblogs.com/ityouknow/p/5714703.html)
+- [Jvm调优之工具篇](http://www.cnblogs.com/ityouknow/p/6437037.html)
+- [Jvm性能调优](http://mp.weixin.qq.com/s?__biz=MzAwNTQ4MTQ4NQ==&mid=2453559992&idx=1&sn=08a48401f425f434bd12c7bb4f0ac0ce&chksm=8cd10fdabba686cca7ba03055efdb9697a1252e8c74d4d9a09bc2a1176955ac798c8f0ec6017&mpshare=1&scene=1&srcid=0912Q2S5v6o3wgm377ybL1ma#rd)
 
 
 

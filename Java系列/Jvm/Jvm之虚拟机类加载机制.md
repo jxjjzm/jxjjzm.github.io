@@ -298,7 +298,7 @@ ClassLoader源码分析：
 ### 附录 ###
 
 - [深入理解Java类加载器(ClassLoader)](https://blog.csdn.net/javazejian/article/details/73413292)
-
+- [class文件基本组织结构](http://blog.csdn.net/luanlouis/article/details/39892027)
 
 
 
