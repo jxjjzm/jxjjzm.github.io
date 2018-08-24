@@ -77,7 +77,7 @@ List接口的实现众多，但其常用的实现莫过于ArrayList和LinkedList
 
 
 1. private static final int DEFAULT_CAPACITY = 10 ： ArrayList ***默认初始容量为10***
-2. private transient Object[] elementData ： ArrayList底层使用***动态数组***(JDK1.8后去掉私有private修饰符来简化嵌套类访问)—— ***transient ?*** 为Java变量修饰符，当我们序列化对象时，如果对象中某个属性不进行序列化操作，那么在该属性前添加transient修饰符即可实现.那么，为什么ArrayList不想对elementData属性进行序列化呢？elementData可是集合中保存元素的数组啊，如果不序列化elementData属性，那么在反序列化时候，岂不是丢失了原先的元素？例如：我们创建了new Object[10]数组对象，但是我们只向其中添加了1个元素，而剩余的9个位置并没有添加元素。当我们进行序列化时，并不会只序列化其中一个元素，而是将整个数组进行序列化操作，那些没有被元素填充的位置也进行了序列化操作，间接的浪费了磁盘的空间，以及程序的性能。所以，ArrayList才会在elementData属性前加上transient修饰符。
+2. private transient Object[] elementData ： ArrayList底层使用***动态数组***(JDK1.8后去掉私有private修饰符来简化嵌套类访问)—— ***transient ?*** 为Java变量修饰符，当我们序列化对象时，如果对象中某个属性不进行序列化操作，那么在该属性前添加transient修饰符即可实现.那么，为什么ArrayList不想对elementData属性进行序列化呢？elementData可是集合中保存元素的数组啊，如果不序列化elementData属性，那么在反序列化时候，岂不是丢失了原先的元素？例如：我们创建了new Object[10]数组对象，但是我们只向其中添加了1个元素，而剩余的9个位置并没有添加元素。当我们进行序列化时，并不会只序列化其中一个元素，而是将整个数组进行序列化操作，那些没有被元素填充的位置也进行了序列化操作，间接的浪费了磁盘的空间，以及程序的性能。所以，ArrayList才会在elementData属性前加上transient修饰符。但是ArrayList 实现了 writeObject() 和 readObject() 来控制只序列化数组中有元素填充那部分内容。
 
 
 3. ArrayList提供了三个构造函数：（1）ArrayList()：默认构造函数，提供初始容量为10的空列表。（2）ArrayList(int initialCapacity)：构造一个具有指定初始容量的空列表。（3）ArrayList(Collection<? extends E> c)：构造一个包含指定 collection 的元素的列表，这些元素是按照该 collection 的迭代器返回它们的顺序排列的。
@@ -370,7 +370,7 @@ ArrayList的get(int index)操作是通过elementData()方法获取对应角标�
 
 
 
-- modCount: 在Itr迭代器初始化时,将ArrayList的modCount属性的值赋值给了expectedModCount。通过阅读ArrayList源码可发现在ArrayList进行增删改时，modCount会随着每一次的操作而+1，modCount记录了ArrayList内发生改变的次数。当迭代器在迭代时，会判断expectedModCount的值是否还与modCount的值保持一致，如果不一致则抛出异常，所以在迭代器迭代过程中不能调用List的增删改操作。
+- modCount: 在Itr迭代器初始化时,将ArrayList的modCount属性的值赋值给了expectedModCount。通过阅读ArrayList源码可发现在ArrayList进行增删改时，modCount会随着每一次的操作而+1，modCount记录了ArrayList内发生改变的次数。当迭代器在迭代时，会判断expectedModCount的值是否还与modCount的值保持一致，如果不一致则抛出异常，所以在迭代器迭代过程中不能调用List的增删改操作。（ 这就是Fail-Fast机制）
 
 
 #### （七）、其他  ####
@@ -420,12 +420,29 @@ ArrayList的get(int index)操作是通过elementData()方法获取对应角标�
 
 
 
+### 二、Vector ###
 
+我们知道Vector与ArrayList类似，底层也是基于动态数组，与ArrayList主要有两点不同：
 
+- Vector 是同步的（使用了 synchronized 进行同步），因此开销就比 ArrayList 要大，访问速度更慢。最好使用 ArrayList 而不是 Vector，因为同步操作完全可以由程序员自己来控制。（可以使用 Collections.synchronizedList()，得到一个线程安全的 ArrayList；也可以使用 concurrent 并发包下的 CopyOnWriteArrayList 类。）
 
+		public synchronized boolean add(E e) {
+		    modCount++;
+		    ensureCapacityHelper(elementCount + 1);
+		    elementData[elementCount++] = e;
+		    return true;
+		}
+		
+		public synchronized E get(int index) {
+		    if (index >= elementCount)
+		        throw new ArrayIndexOutOfBoundsException(index);
+		
+		    return elementData(index);
+		}
 
+- Vector 每次扩容请求其大小的 2 倍空间，而 ArrayList 是 1.5 倍。
 
-二、LinkedList
+### 三、LinkedList ###
 
 ![](https://i.imgur.com/synrDIQ.png)
 
@@ -474,6 +491,8 @@ ArrayList的get(int index)操作是通过elementData()方法获取对应角标�
 
 
 在LinkedList中，内部类Node对象最为重要，它组成了LinkedList集合的整个链表，分别指向上一个点、下一个结点，存储着集合中的元素；
+
+![](https://github.com/CyC2018/CS-Notes/raw/master/pics/49495c95-52e5-4c9a-b27b-92cf235ff5ec.png)
 
 
 #### （二）、数据结构之链表基础操作 ####
@@ -943,5 +962,19 @@ AbstractSequentialList的iterator()方法又调用了AbstractSequentialList的�
 
 LinkedList实现了Deque接口，实现了队列相关的操作。（这里不再详述Deque，有机会在Deque中我们再见）
 
+
+
+#### 附-Java集合专题面试宝典 ####
+
+- Collection 集合体系
+- LinkedList、ArrayList、Vector 比较（线程安全角度、实现原理角度、优缺点）
+- LinkedList 底层实现原理
+- ArrayList 底层实现原理（赠、删、查、改、扩容（初始容量、扩容大小、扩容机制））
+- HashMap、HashTable 比较 （线程安全角度、Key Null角度、Fail Fast）
+- HashMap源码（增、删、查、改、扩容（初始容量、扩容因子、扩容机制...）、JDK1.7与JDK1.8）
+- LinkedHashMap底层实现原理
+- ConcurrentHashMap底层实现原理
+
+（[集合面试必问](https://mp.weixin.qq.com/s?__biz=MzU4NDQ4MzU5OA==&mid=2247484308&idx=1&sn=e3607919aed604be629617f867f46844&chksm=fd9855f5caefdce3f1ee72cb33b9b3bf9899fa2b64bbb92f1e820c0ef3985245b1f7dfc05358&mpshare=1&scene=1&srcid=08248lErlPI3QKHCLNEfSqBN#rd)）
 
 
