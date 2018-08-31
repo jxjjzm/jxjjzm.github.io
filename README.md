@@ -21,6 +21,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 	* [专题之Java并发](#jxjjzm-java-juc)
 	* [专题之JVM](#jxjjzm-java-jvm)
 	* [专题之IO](#jxjjzm-java-io)
+	* [杂谈](#jxjjzm-java-other)
 * [Distributed System 系列](#jxjjzm-distributed-system)
 	* [分布式技术杂谈](#jxjjzm-distributed-system-talk)
 	* [Zookeeper](#jxjjzm-distributed-system-zookeeper)
@@ -42,32 +43,38 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 - [Java LinkedHashMap源码解读](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Collection/Java%20LinkedHashMap%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB.md)
 - [Java List源码解读](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Collection/Java%20List%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB.md)
 - [Java Set源码解读](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Collection/Java%20Set%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB.md)
+- [Java 数据结构与算法](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Collection/Java%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95.md)
 
 <h3 id="jxjjzm-java-juc">专题之Java并发</h3>
 
 - [浅析Java内存模型（JMM)](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.md)
 - [浅析Unsafe & CAS & AQS](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Unsafe%20%26%20CAS%20%26%20AQS.md)
+- [JUC锁框架概述](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/JUC%E9%94%81%E6%A1%86%E6%9E%B6%E6%A6%82%E8%BF%B0.md)
 - [浅析synchronized & volatile & 锁优化](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90synchronized%20%26%20volatile%20%26%20%E9%94%81%E4%BC%98%E5%8C%96.md)
 - [浅析Threadlocal](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Threadlocal.md)
 - [浅析ReentrantLock & Condition](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90ReentrantLock%20%26%20Condition.md)
 - [浅析Semaphore](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90Semaphore.md)
 - [浅析CountDownlatch & CyclicBarrier](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/%E6%B5%85%E6%9E%90CountDownlatch%20%26%20CyclicBarrier.md)
-- [JUC锁框架概述](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/JUC%E9%94%81%E6%A1%86%E6%9E%B6%E6%A6%82%E8%BF%B0.md)
 - [Executor框架与线程池](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Concurrent/Executor%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%BA%BF%E7%A8%8B%E6%B1%A0.md)
+- []()
 
 <h3 id="jxjjzm-java-jvm">专题之JVM</h3>
 
 
-- [Jvm之自动内存管理机制(内存分配、垃圾回收)](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6(%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6).md "Jvm之自动内存管理机制(内存分配、垃圾回收)")
-- [Jvm之虚拟机类加载机制](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6.md "Jvm之虚拟机类加载机制")
-- [Jvm之虚拟机性能监控与故障处理工具](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%91%BD%E4%BB%A4%E4%B8%8E%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7.md)
+- [Jvm之自动内存管理机制(内存分配、垃圾回收)](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6(%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6).md)
+- [Jvm之虚拟机类加载机制](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6.md)
+- [Jvm之虚拟机性能监控命令与故障处理工具、性能调优](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/Jvm%E4%B9%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%91%BD%E4%BB%A4%E4%B8%8E%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7.md)
+- [JVM之问题排查与分析实战](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Jvm/JVM%E4%B9%8B%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98.md)
 
 
 
 <h3 id="jxjjzm-java-design-pattern">专题之Design Pattern</h3>
 
+* [设计模式——设计模式概览](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%A6%82%E8%A7%88.md)
 * [设计模式——创建型之单例模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%9B%E5%BB%BA%E5%9E%8B%E4%B9%8B%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F.md)
 * [设计模式——创建型之工厂模式（简单工厂模式、工厂方法模式、抽象工厂模式）](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%9B%E5%BB%BA%E5%9E%8B%E4%B9%8B%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%88%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E3%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E3%80%81%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%89.md)
+* [设计模式——结构型之模板方法模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E7%BB%93%E6%9E%84%E5%9E%8B%E4%B9%8B%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F.md)
+* [设计模式——行为型之模板方法模式](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/Design%20Pattern/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E8%A1%8C%E4%B8%BA%E5%9E%8B%E4%B9%8B%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.md)
 
 
 <h3 id="jxjjzm-java-java8">专题之Java8</h3>
@@ -76,6 +83,11 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h3 id="jxjjzm-java-io">专题之IO</h3>
 
+* [Java NIO 概述](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/IO/Java%20NIO%20%E6%A6%82%E8%BF%B0.md)
+
+<h3 id="jxjjzm-java-other">杂谈</h3>
+
+* [七嘴八舌话“代理”](https://github.com/jxjjzm/jxjjzm.github.io/tree/master/Java%E7%B3%BB%E5%88%97/%E6%9D%82%E8%B0%88)
 
 
 
