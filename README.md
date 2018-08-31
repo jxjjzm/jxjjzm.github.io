@@ -88,6 +88,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 <h3 id="jxjjzm-java-other">杂谈</h3>
 
 * [七嘴八舌话“代理”](https://github.com/jxjjzm/jxjjzm.github.io/tree/master/Java%E7%B3%BB%E5%88%97/%E6%9D%82%E8%B0%88)
+* [EasyMock](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Java%E7%B3%BB%E5%88%97/%E6%9D%82%E8%B0%88/EasyMock.md)
 
 
 
