@@ -82,6 +82,8 @@ Redis启动后会读取RDB快照文件，将数据从硬盘载入到内存。根
 
 aof 的方式也同时带来了另一个问题。持久化文件会变的越来越大。例如我们调用incr test命令100次，文件中必须保存全部的100条命令，其实有99条都是多余的。因为要恢复数据库的状态其实文件中保存一条set test 100就够了。为了压缩aof的持久化文件。redis提供了bgrewriteaof命令。收到此命令redis将使用与快照类似的方式将内存中的数据以命令的方式保存到临时文件中，最后替换原来的文件。
 
+**误区：所谓的“重写”其实是一个有歧义的词语， 实际上， AOF 重写并不需要对原有的 AOF 文件进行任何写入和读取， 它针对的是数据库中键的当前值。**
+
 ![](http://dl2.iteye.com/upload/attachment/0112/8401/34167c00-296e-36cb-b5c4-92c57a758d70.jpg)
 
 具体过程如下：
@@ -165,7 +167,12 @@ aof 的方式也同时带来了另一个问题。持久化文件会变的越来�
 
 
 
+附录：
 
+
+
+- [《Redis 设计与实现 —— RDB》](https://redisbook.readthedocs.io/en/latest/internal/rdb.html)
+- [《Redis 设计与实现 —— AOF》](https://redisbook.readthedocs.io/en/latest/internal/aof.html)
 
 
 

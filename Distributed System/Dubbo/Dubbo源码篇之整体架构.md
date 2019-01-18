@@ -117,9 +117,13 @@ ExchangeClient, ExchangeServe
 
 
 
+附录：
 
+【肥朝】Dubbo 源码解析：http://www.jianshu.com/u/f7daa458b874
 
+【MR_QI】Dubbo 源码解析：https://my.oschina.net/qixiaobo025/blog 或 http://qixiaobo.site/tags/dubbo/
 
+【杨武兵】Dubbo 源码解析 : https://my.oschina.net/ywbrj042
 
 
 

@@ -5,11 +5,11 @@
 
 ### 一、Redis简介 ###
 
-Redis是一个**完全开源免费的、遵守BSD协议、使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、高性能的Key-Value数据库**，并提供多种语言的API。和Memcached类似，但它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(sorted set --有序集合)和hash（哈希类型）等。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。在此基础上，redis支持各种不同方式的排序。
+Redis（「Remote Dictionary Service」远程字典服务）是一个**完全开源免费的、遵守BSD协议、使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、高性能的Key-Value数据库**，并提供多种语言的API。和Memcached类似，但它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(sorted set --有序集合)和hash（哈希类型）等。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。在此基础上，redis支持各种不同方式的排序。
 
 与memcached一样，为了保证效率，Redis采用了**内存中（in-memory）数据集（dataset）的方式** ,即数据都是缓存在内存中的。同时，Redis支持数据的**持久化**，你可以每间隔一段时间将数据集转存到磁盘上（snapshot）或者在日志尾部追加每一条操作命令(append only file,aof).Redis 同样支持主从复制（master-slave replication）,并且具有非常快速的非阻塞首次同步（non_locking first synchronization）、网络断开自动重连等功能。同时Redis还具有其他的一些特性，其中包括简单的事务支持、发布订阅(pub/sub)、管道（pipeline）和虚拟内存(vm)等
 
-除此之外，**Redis 还内置了 复制（replication），LUA脚本（Lua scripting）， LRU驱动事件（LRU eviction），事务（transactions） 和不同级别的磁盘持久化（persistence）， 并通过 Redis哨兵（Sentinel）和自动 分区（Cluster）提供高可用性（high availability）**。
+除此之外，**Redis 还内置了 复制（replication），LUA脚本（Lua scripting）， LRU驱动事件（LRU eviction），事务（transactions） 和不同级别的磁盘持久化（persistence）， 并通过 Redis哨兵（Sentinel）和自动分区（Cluster）提供高可用性（high availability）**。
 
 
 redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部分场合可以对关系数据库起到很好的补充作用。它提供了Java，C/C++，C#，PHP，JavaScript，Perl，Object-C，Python，Ruby，Erlang等客户端，使用很方便。
@@ -24,12 +24,20 @@ redis的出现，很大程度补偿了memcached这类key/value存储的不足，
 - **[主从复制](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Distributed%20System/Redis/Redis%E4%BD%BF%E7%94%A8%E7%AF%87%E2%80%94%E2%80%94Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%EF%BC%88master-slave%20replication%EF%BC%89.md)**：Redis支持数据的备份，即master-slave模式的数据备份。
 
 
-#### 2.Redis版本说明 ####
+#### 2.Redis有什么缺点？ ####
+
+
+- 由于 Redis 是内存数据库，所以，单台机器，存储的数据量，受机器本身的内存大小限制。虽然 Redis 本身有 Key 过期策略，但是还是需要提前预估和节约内存。如果内存增长过快，需要定期删除数据。（可使用 Redis Cluster、Codis 等方案，对 Redis 进行分区，从单机 Redis 变成集群 Redis 。）
+- 如果进行完整重同步，由于需要生成 RDB 文件，并进行传输，会占用主机的 CPU ，并会消耗现网的带宽。不过 Redis2.8 版本，已经有部分重同步的功能，但是还是有可能有完整重同步的。比如，新上线的备机。
+- 修改配置文件，进行重启，将硬盘中的数据加载进内存，时间比较久。在这个过程中，Redis 不能提供服务。
+
+
+#### 3.Redis版本说明 ####
 
 Redis的版本规则如下————次版本号（第一个小数点后的数字）为偶数的版本是稳定版本（2.4、2.6等），奇数为非稳定版本（2.5、2.7），一般推荐在生产环境使用稳定版本。（说明：Redis官方是不支持windows平台的，windows版本是由微软自己建立的分支，基于官方的Redis源码上进行编译、发布、维护的，所以windows平台的Redis版本要略低于官方版本。）
 
 
-#### 3.主流NSQL比较 ####
+#### 4.主流NSQL比较 ####
 
 ![](https://i.imgur.com/IwcXHdQ.png)
 
@@ -39,12 +47,13 @@ Redis的版本规则如下————次版本号（第一个小数点后的数
 
 - **数据类型支持不同** ———— memcached 仅支持简单的key-value结构的数据类型---String；Redis支持丰富的数据类型：String、Hash、List、Set和Sorted Set.
 - **数据持久化支持** ———— memcached 所有数据都存储在内存中，不支持数据的持久化，所以一般只用作缓存；Redis 虽然是基于内存的存储系统，但是它本身是支持内存数据的持久化的，而且提供两种主要的持久化策略：RDB快照和AOF日志，所以Redis既可以用作缓存，也可以用作存储。
+- **性能对比** ———— Redis 只使用单核，而 Memcached 可以使用多核，所以平均每一个核上 Redis在存储小数据时比 Memcached 性能更高；在 100k 以上的数据中，Memcached 性能要高于 Redis 。虽然 Redis 最近也在存储大数据的性能上进行优化，但是比起 Memcached，还是稍有逊色。
 - **主从复制**（master-slave replication）———— Redis支持数据的复制（备份），即master-slave模式的数据复制（备份）；memcached则不支持。
 - **消息订阅发布**（pub/sub）———— Redis实现了消息的订阅/发布功能，memcached则没有。
 - **value大小** ———— redis最大可以达到1GB，而memcache只有1MB
 - **集群管理的不同**
 
-memcached本身并不支持分布式，因此只能在客户端通过像一致性哈希算法这样的分布式算法来实现memcached的分布式存储。下图给出了Memcached的分布式存储实现架构。当客户端向Memcached集群发送数据之前，首先会通过内置的分布式算法计算出该条数据的目标节点，然后数据会直接发送到该节点上存储。但客户端查询数据时，同样要计算出查询数据所在的节点，然后直接向该节点发送查询请求以获取数据。
+memcached本身并不支持分布式，因此只能在客户端通过像一致性哈希算法这样的分布式算法来实现memcached的分布式存储。下图给出了Memcached的分布式存储实现架构。当客户端向Memcached集群发送数据之前，首先会通过内置的分布式算法计算出该条数据的目标节点，然后数据会直接发送到该节点上存储。当客户端查询数据时，同样要计算出查询数据所在的节点，然后直接向该节点发送查询请求以获取数据。
 
 ![](http://www.biaodianfu.com/wp-content/uploads/2014/01/Memcached-node.jpg)
 
