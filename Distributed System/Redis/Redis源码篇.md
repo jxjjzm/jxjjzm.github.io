@@ -1,4 +1,4 @@
-### Redis概述篇（续）—— Redis源码底层数据结构 ###
+### Redis源码篇—— Redis底层数据结构 ###
 ***
 
 
@@ -20,7 +20,7 @@
 
 ### 一、简单动态字符串 ###
 
-Redis没有直接使用C语言传统的字符串表示（以空字符结尾的字符数组，以下简称C字符串），而是自己构建了一种名为简单动态字符串（simple dynamic string,SDS）的抽象类型，并将SDS用作Redis的默认字符串表示。(在Redis里面，C字符串只会座位字符串字面量用在一些无需对字符串值进行修改的地方，比如打印日志；当Redis需要的不仅仅是一个字符串字面量，而是一个可以被修改的字符串值时，Redis就会使用SDS来表示字符串值)
+Redis没有直接使用C语言传统的字符串表示（以空字符结尾的字符数组，以下简称C字符串），而是自己构建了一种名为简单动态字符串（simple dynamic string,SDS）的抽象类型，并将SDS用作Redis的默认字符串表示。(在Redis里面，C字符串只会作为字符串字面量用在一些无需对字符串值进行修改的地方，比如打印日志；当Redis需要的不仅仅是一个字符串字面量，而是一个可以被修改的字符串值时，Redis就会使用SDS来表示字符串值)
 
 	struct SDS<T> {
 	  int len; // 记录buf数组中已使用字节的数量，等于SDS所保存字符串的长度
@@ -150,17 +150,17 @@ Redis 的字符串有两种存储方式，在长度特别短时，使用 emb 形
 
 
 
-	/* 哈希表节点 */
-	typedef struct dictEntry {
-	    void *key; /* 键名 */
-	    union {
-	        void *val;
-	        uint64_t u64;
-	        int64_t s64;
-	        double d;
-	    } v; /* 值 */
-	    struct dictEntry *next; /* 指向下一个节点, 形成链表*/
-	} dictEntry;
+		/* 哈希表节点 */
+		typedef struct dictEntry {
+		void *key; /* 键名 */
+		union {
+		void *val;
+		uint64_t u64;
+		int64_t s64;
+		double d;
+		} v; /* 值 */
+		struct dictEntry *next; /* 指向下一个节点, 形成链表*/
+		} dictEntry;
 
 
 
@@ -173,13 +173,13 @@ Redis字典所使用的哈希表由dict.h/dictht结构定义：：
 - used属性则记录了哈希表目前已有节点（键值对）的数量
 - sizemask属性的值总是等于size-1,这个属性和哈希值一起决定一个键应该被放到table数组的哪个索引上面。
 
-	/* 哈希表结构 */
-	typedef struct dictht {
-	    dictEntry **table; /* 哈希表节点数组 */
-	    unsigned long size; /* 哈希表大小 */
-	    unsigned long sizemask; /* 哈希表大小掩码，用于计算哈希表的索引值，大小总是size - 1 */
-	    unsigned long used; /* 哈希表已经使用的节点数量 */
-	} dictht;
+	    /* 哈希表结构 */
+    	typedef struct dictht {
+    	dictEntry **table; /* 哈希表节点数组 */
+    	unsigned long size; /* 哈希表大小 */
+    	unsigned long sizemask; /* 哈希表大小掩码，用于计算哈希表的索引值，大小总是size - 1 */
+    	unsigned long used; /* 哈希表已经使用的节点数量 */
+    	} dictht;
 
 
 ![](https://i.imgur.com/Ki82mZN.png)
@@ -196,14 +196,14 @@ Redis中的字典由dict.h/dict结构表示：
 
 
 
-	/* 字典结构 每个字典有两个哈希表，实现渐进式哈希时需要用在将旧表rehash到新表 */
-	typedef struct dict {
-	    dictType *type; /* 类型特定函数 */
-	    void *privdata; /* 保存类型特定函数需要使用的参数 */
-	    dictht ht[2]; /* 保存的两个哈希表，ht[0]是真正使用的，ht[1]会在rehash时使用 */
-	    long rehashidx; /* rehashing not in progress if rehashidx == -1 rehash进度，如果不等于-1，说明还在进行rehash */
-	    unsigned long iterators; /* number of iterators currently running 正在运行中的遍历器数量 */
-	} dict;
+	    /* 字典结构 每个字典有两个哈希表，实现渐进式哈希时需要用在将旧表rehash到新表 */
+    	typedef struct dict {
+    	dictType *type; /* 类型特定函数 */
+    	void *privdata; /* 保存类型特定函数需要使用的参数 */
+    	dictht ht[2]; /* 保存的两个哈希表，ht[0]是真正使用的，ht[1]会在rehash时使用 */
+    	long rehashidx; /* rehashing not in progress if rehashidx == -1 rehash进度，如果不等于-1，说明还在进行rehash */
+    	unsigned long iterators; /* number of iterators currently running 正在运行中的遍历器数量 */
+    	} dict;
 
 其中，dictType 结构体定义如下
 
@@ -240,7 +240,7 @@ Redis 哈希表不仅支持扩容，还支持缩容，这些工作可以通过�
 **Redis扩容条件** —— 当一下条件中的任意一个被满足时，程序会自动开始对哈希表执行扩容操作：
 
 
-- 服务器目前没有执行BGSAVE、BGREWRITEAOF命令，并且哈希表的负载因子大于等于1.（其中，负载因子=哈希表已保存节点数量、哈希表大小）
+- 服务器目前没有执行BGSAVE、BGREWRITEAOF命令，并且哈希表的负载因子大于等于1.（其中，负载因子=哈希表已保存节点数量/哈希表大小）
 - 服务器目前正在执行行BGSAVE、BGREWRITEAOF命令，并且哈希表的负载因子大于等于5.
 
 **Redis缩容条件** —— 当哈希表的负载因子小于0.1时，程序自动开始对哈希表执行缩容操作。
@@ -264,24 +264,80 @@ Redis 哈希表不仅支持扩容，还支持缩容，这些工作可以通过�
 
 #### 1.跳跃表节点 ####
 
+跳跃表是一种有序的数据结构，他通过在每个节点中维持多个指向其他节点的指针，从而达到快速访问节点的目的；
+跳跃表支持平均O（logN），最坏O（N）复杂度的节点查找，还可以通过顺序性操作来批量处理节点。性能上和平衡树媲美，因为实现简单，常用来代替平衡树。在redis中，只在两个地方使用了跳跃表，一个是实现有序集合键，另一个是在集群节点中用作内部数据结构。
+
+
 跳跃表节点的实现由redis.h/zskiplistNode结构定义：
 
+    typedef struct zskiplistNode {
+	    robj *obj;  //保存的成员对象
+	    double score;   //分值
+	    struct zskiplistNode *backward; //后退指针
+	    struct zskiplistLevel {
+	    struct zskiplistNode *forward;  //前进指针
+	    unsigned int span;  //跨度
+	    } level[];  //层，柔型数组
+    } zskiplistNode;
+    
+
+- 层 ： 跳跃表节点的Level数组可以包含多个元素，每个元素都包含一个指向其他节点的指针，程序可以通过这些层来加快访问其他节点的速度，一般来说，层的数量越多，访问其他节点的速度就越快。（每次创建一个新跳跃表节点的时候，程序都根据幂次定律随机生成一个介于1和32之间的值作为level数组的大小，这个大小就是层的“高度”）
+- 前进指针： 每个层都有一个指向表尾方向的前进指针，用于从表头向表尾方向访问节点。
+- 跨度：层的跨度用于记录两个节点之间的距离（初看上去很容易认为跨度和遍历操作有关，但实际并不是这样，遍历操作只使用前进指针就可以完成了，跨度实际上是用来计算排位(rank)的：在查找某个节点的过程中，将沿途访问过的所有层的跨度累计起来，得到的结果就是目标节点在跳跃表中的排位）：
+	- 两个节点之间的跨度越大，他么相距得就越远。
+	- 指向NULL的所有前进指针的跨度都为0，因为它们没有连向任何节点。
+- 后退指针： 用于从表尾向表头方向访问节点。
+- 分值：节点的分支(score)是一个double类型的浮点数，跳跃表中的所有节点都按分支从小到大来排序。
+- 成员：节点的成员变量是一个指针，它指向一个字符串对象，而字符串对象则保存着一个SDS值。（在同一个跳跃表中，各个节点）
 
 
 
+#### 2.跳跃表 ####
+
+仅靠多个跳跃表节点就可以组成一个跳跃表，但通过一个zskiplist结构来持有这些节点，程序可以更方便地对整个跳跃表进行处理。
+
+    typedef struct zskiplist {
+	    struct zskiplistNode *header, *tail;//header指向跳跃表的表头节点，tail指向跳跃表的表尾节点
+	    unsigned long length;   //跳跃表的长度或跳跃表节点数量计数器
+	    int level;  //跳跃表中节点的最大层数（表头节点的层高并不计算在内）
+    } zskiplist;
 
 
-2.
 
-
-
-
+![](https://i.imgur.com/bNHB0YG.png)
 
 ### 五、整数集合 ###
 
+整数集合(intset)是Redis用于保存整数值的集合抽象数据结构，它可以保存类型为int16_t、int32_t 或者 int64_t的整数值，并且保证集合中不会出现重复元素。每个intset.h/intset结构表示一个整数集合：
+
+
+    typedef struct intset {
+	    uint32_t encoding;  //编码方式，决定整数位宽是 16 位、32 位还是 64 位
+	    uint32_t length;  //集合包含的元素数量
+	    int8_t contents[];//保存元素的数组
+    } intset;
+
+
+
+- contents数组是整数集合的底层实现：整数集合的每个元素都是contents数组的一个数组项(item),各个项在数组中按值的大小从小到大有序地排列，并且数组中不包含任何重复项。
+- length属性记录了整数集合包含的元素数量，也即是contents数组的长度。
+
+
+#### 1.升级 ####
+
+整数集合中可以存储int16_t、int32_t、int64_t这三种类型的整数，但在任一时刻，集合中所有元素的类型都是统一的。 
+如果当前集合存储的元素是int16_t类型，当需要存入一个int32_t类型的整数时，Redis会分配一片新的内存空间，将每个元素的类型提升为int32_t，再将所有元素迁移至新数组中。 
+
+- 整数集合的升级策略有两个好处，一个是提升整数集合的灵活性，另一个就是尽可能地节约内存。
+- 整数集合不支持降级操作，一旦对数组进行了升级，编码就会一直保持升级后的状态。
 
 
 ### 六、压缩列表 ###
+
+压缩列表（ziplist）是zset和hash键的底层实现之一。当一个列表键只包含少量列表项，并且每个列表项要么就是小整数值，要么就是长度比较短的字符串，那么Redis就会使用压缩列表来做列表键的底层实现；另外，当一个哈希键只包含少量键值对，并且每个键值对的键和值要么就是小整数值，要么就是长度比较短的字符串，那么Redis就会使用压缩列表来做哈希键的底层实现。
+
+压缩列表是Redis为了节约内存而开发的，是由一系列特殊编码的连续内存快组成的顺序型数据结构。一个压缩列表可以包含任意多个节点(entry),每个节点保存一个字节数组或者一个整数值。
+
 
 
 ### 四、对象 ###
