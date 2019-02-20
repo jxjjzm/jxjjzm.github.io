@@ -34,8 +34,46 @@
 
 ![](https://images2015.cnblogs.com/blog/37237/201604/37237-20160407211709906-1980347591.png)
 
+布隆过滤器是一种space efficient的概率型数据结构，它实际上是一个很长的二进制向量和一系列随机映射函数。布隆过滤器可以用于检索一个元素是否在一个集合中。它的优点是空间效率和查询时间都比一般的算法要好的多，缺点是有一定的误识别率和删除困难。（当布隆过滤器说某个值存在时，这个值可能不存在；当它说不存在时，那就肯定不存在。）
+
+算法：
 
 
+- 1.首先需要k个hash函数，每个函数可以把key散列成为1个整数
+- 2.初始化时，需要一个长度为n比特的数组，每个比特位初始化为0
+- 3.某个key加入集合时，用k个hash函数计算出k个散列值，并把数组中对应的比特位置为1
+- 4.判断某个key是否在集合时，用k个hash函数计算出k个散列值，并查询数组中对应的比特位是否都为1，只要有一个位为 0，那么说明布隆过滤器中这个 key 不存在。如果都是 1，这并不能说明这个 key 就一定存在，只是极有可能存在，因为这些位被置为 1 可能是因为其它的 key 存在所致。如果这个位数组比较稀疏，判断正确的概率就会很大，如果这个位数组比较拥挤，判断正确的概率就会降低。。
+
+Redis中的布隆过滤器：
+
+Redis 官方提供的布隆过滤器到了 Redis 4.0 提供了插件功能之后才正式登场。布隆过滤器作为一个插件加载到 Redis Server 中，给 Redis 提供了强大的布隆去重功能。布隆过滤器有二个基本指令，bf.add 添加元素，bf.exists 查询元素是否存在，它的用法和 set 集合的 sadd 和 sismember 差不多。注意 bf.add 只能一次添加一个元素，如果想要一次添加多个，就需要用到 bf.madd 指令。同样如果需要一次查询多个元素是否存在，就需要用到 bf.mexists 指令。
+
+ava 客户端 Jedis-2.x 没有提供指令扩展机制，所以你无法直接使用 Jedis 来访问 Redis Module 提供的 bf.xxx 指令。RedisLabs 提供了一个单独的包 JReBloom，但是它是基于 Jedis-3.0，Jedis-3.0 这个包目前还没有进入 release，没有进入 maven 的中央仓库，需要在 Github 上下载。在使用上很不方便，如果怕麻烦，还可以使用 lettuce，它是另一个 Redis 的客户端，相比 Jedis 而言，它很早就支持了指令扩展。
+
+	public class BloomTest {
+	
+	  public static void main(String[] args) {
+	    Client client = new Client();
+	
+	    client.delete("codehole");
+	    for (int i = 0; i < 100000; i++) {
+	      client.add("codehole", "user" + i);
+	      boolean ret = client.exists("codehole", "user" + (i + 1));
+	      if (ret) {
+	        System.out.println(i);
+	        break;
+	      }
+	    }
+	
+	    client.close();
+	  }
+	
+	}
+
+Redis 4.0 之前也有第三方的布隆过滤器 lib 使用，只不过在实现上使用 redis 的位图来实现的，性能上也要差不少。比如一次 exists 查询会涉及到多次 getbit 操作，网络开销相比而言会高出不少。另外在实现上这些第三方 lib 也不尽完美，比如 pyrebloom 库就不支持重连和重试，在使用时需要对它做一层封装后才能在生产环境中使用。
+
+- [Python Redis Bloom Filter](https://github.com/robinhoodmarkets/pyreBloom)
+- [Java Redis Bloom Filter](https://github.com/Baqend/Orestes-Bloomfilter)
 
 
 ### 二、Redis缓存击穿（并发） ###
