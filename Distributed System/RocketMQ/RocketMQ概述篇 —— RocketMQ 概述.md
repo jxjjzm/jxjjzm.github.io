@@ -1,13 +1,22 @@
-### RocketMQ概述篇 —— Rocket 概述 ###
+### RocketMQ概述篇 —— RocketMQ概述 ###
 ***
 
 ### 一、概述 ###
 
 #### 1. RocketMQ  是什么？ ####
 
+
+![](https://ws3.sinaimg.cn/large/006tKfTcgy1fo4vbtu01lj31kw0jbjzw.jpg)
+
+![](https://ws2.sinaimg.cn/large/006tKfTcgy1fo4vbvbgisj31kw0yw7c9.jpg)
+
+
+RocketMQ 是阿里巴巴在 2012 年开源的分布式消息中间件，目前已经捐赠给 Apache 软件基金会，并于 2017 年 9 月 25 日成为 Apache 的顶级项目。作为经历过多次阿里巴巴双十一这种“超级工程”的洗礼并有稳定出色表现的国产中间件，以其高性能、低延时和高可靠等特性近年来已经也被越来越多的国内企业使用。
+
+
 ![](http://img3.tbcdn.cn/5476e8b07b923/TB1rdyvPXXXXXcBapXXXXXXXXXX)
 
-上图是一个典型的消息中间件收发消息的模型，RocketMQ也是这样的设计，简单说来，RocketMQ具有以下特点：
+下图是一个典型的消息中间件收发消息的模型，RocketMQ也是这样的设计，简单说来，RocketMQ具有以下特点：
 
 - 是一个队列模型的消息中间件，具有高性能、高可靠、高实时、分布式特点。
 -  Producer、 Consumer、队列都可以分布式。
@@ -58,58 +67,8 @@
 - com.alibaba.commonmq v1.0 = Notify + RocketMQ + B2B个性化需求 为B2B应用提供消息服务  
 
 
+#### 3.Rocket专业术语 ####
 
-#### 3.RocketMQ物理部署结构 ####
-
-![](http://img3.tbcdn.cn/5476e8b07b923/TB18GKUPXXXXXXRXFXXXXXXXXXX)
-
-如上图所示， RocketMQ的部署结构有以下特点：
-
-
-- Name Server是一个几乎无状态节点，可集群部署，节点之间无任何信息同步。
-
-
-- Broker部署相对复杂，Broker分为Master与Slave，一个Master可以对应多个Slave，但是一个Slave只能对应一个Master，Master与Slave的对应关系通过指定相同的BrokerName，不同的BrokerId来定义，BrokerId为0表示Master，非0表示Slave。Master也可以部署多个。每个Broker与Name Server集群中的所有节点建立长连接，定时注册Topic信息到所有Name Server。
-
-
-- Producer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master建立长连接，且定时向Master发送心跳。Producer完全无状态，可集群部署。（Producer只和Mbroker建立连接，只向Mbroker发消息。）
-
-
-- Consumer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master、Slave建立长连接，且定时向Master、Slave发送心跳。Consumer既可以从Master订阅消息，也可以从Slave订阅消息，订阅规则由Broker配置决定。（Consumer和Mbroker、Sbroker都建立连接。）
-
-
-#### 4.RocketMQ逻辑部署结构 ####
-
-![](http://img3.tbcdn.cn/5476e8b07b923/TB1lEPePXXXXXX8XXXXXXXXXXXX)
-
-如上图所示，RocketMQ的逻辑部署结构有Producer和Consumer两个特点。
-
-**Producer Group**
-
-用来表示一个发送消息应用，一个Producer Group下包含多个Producer实例，可以是多台机器，也可以是一台机器的多个进程，或者一个进程的多个Producer对象。一个Producer Group可以发送多个Topic消息，Producer Group作用如下：
-
-
-
-- 1）. 标识一类 Producer
-- 2）. 可以通过运维工具查询这个发送消息应用下有多个 Producer 实例
-- 3）. 发送分布式事务消息时，如果 Producer 中途意外宕机，Broker 会主动回调 Producer Group 内的任意一台机器来确认事务状态。
-
-
-**Consumer Group**
-
-用来表示一个消费消息应用，一个Consumer Group下包含多个Consumer实例，可以是多台机器，也可以是多个进程，或者是一个进程的多个Consumer对象。一个Consumer Group下的多个Consumer以均摊方式消费消息，如果设置为广播方式，那么这个Consumer Group下的每个实例都消费全量数据。
-
-
-
-#### 5.RocketMQ 数据存储结构 ####
-
-![](http://img3.tbcdn.cn/5476e8b07b923/TB1Ali2PXXXXXXuXFXXXXXXXXXX)
-
-如上图所示，RocketMQ采取了一种数据与索引分离的存储方法。有效降低文件资源、IO资源，内存资源的损耗。即便是阿里这种海量数据，高并发场景也能够有效降低端到端延迟，并具备较强的横向扩展能力。
-
-
-
-### 二、Rocket专业术语 ###
 
 
 
@@ -168,6 +127,167 @@ Consumer Group 有 3 个实例（可能是 3 个进程，或者 3 台机器）�
 
 
 
+
+
+### 二、RocketMQ整体架构 ###
+
+![](http://img3.tbcdn.cn/5476e8b07b923/TB18GKUPXXXXXXRXFXXXXXXXXXX)
+
+如上图所示， RocketMQ的部署结构有以下特点：
+
+
+- Name Server是一个几乎无状态节点，可集群部署，节点之间无任何信息同步。
+
+
+- Broker部署相对复杂，Broker分为Master与Slave，一个Master可以对应多个Slave，但是一个Slave只能对应一个Master，Master与Slave的对应关系通过指定相同的BrokerName，不同的BrokerId来定义，BrokerId为0表示Master，非0表示Slave。Master也可以部署多个。每个Broker与Name Server集群中的所有节点建立长连接，定时注册Topic信息到所有Name Server。
+
+
+- Producer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master建立长连接，且定时向Master发送心跳。Producer完全无状态，可集群部署。（Producer只和Mbroker建立连接，只向Mbroker发消息。）
+
+
+- Consumer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master、Slave建立长连接，且定时向Master、Slave发送心跳。Consumer既可以从Master订阅消息，也可以从Slave订阅消息，订阅规则由Broker配置决定。（Consumer和Mbroker、Sbroker都建立连接。）
+
+
+
+**RocketMQ 主要组成角色：**
+
+#### 1.Namesrv  ####
+
+在Apache RocketMQ，域名服务器(NameSrv)被设计为协调分布式系统的每个组件，协调主要通过管理主题路由信息来实现。管理由两部分组成：
+
+- Broker定期更新保存在每一个NameServer中的元数据.
+- NameServer为客户端提供服务，包括生产者，消费者和带有最新路由信息的命令行客户端。
+
+因此，在启动broker和客户端之前，我们需要告诉它们如何通过向NameServer提供域名服务地址列表访问name servers。
+
+- 编程方式 : 对于Broker，可以在broker配置文件中指定namesrvAddr=name-server-ip1:port;name-server-ip2:port。对于生产者和消费者，可以通过编程代码指定，比如xxx.setNamesrvAddr .
+
+- java选项 ： NameServer地址列表可以在启动前通过指定java启动参数 rocketmq.namesrv.addr 提供给你的应用。
+
+- 环境变量 : 可以export NAMESRV_ADDR 环境变量。如果设置，Brokers和clients将会检查和使用它。
+
+- HTTP Endpoint : 如果没有使用上面提到的方法指定NameServer地址列表，RocketMQ将访问以下http端点，每两分钟获取和更新NameServer地址列表，初始延迟10秒。(默认端点：http://jmenv.tbsite.net:8080/rocketmq/nsaddr)
+
+
+(优先级说明： Programmatic Way > Java Options > Environment Variable > HTTP Endpoint)
+
+
+NameServer特点：
+
+
+ 1、Namesrv 需要部署多个节点，以保证 Namesrv 的高可用。
+- 2、Namesrv 本身是无状态，不产生数据的存储，是通过 Broker 心跳将 Topic 信息同步到 Namesrv 中。
+- 3、多个 Namesrv 之间不会有数据的同步，是通过 Broker 向多个 Namesrv 多写。
+
+
+#### 2.Broker ####
+
+Broker 通过提供轻量级的 Topic 和 Queue 机制来照顾消息存储。它们支持 Push 和 Pull 模式，包含容错机制（2个拷贝或者3个拷贝），并且提供了强大的峰值填充和以原始时间顺序累计数千亿条消息的能力。此外，broker 还提供灾难恢复，丰富的指标统计数据和警报机制，而传统的消息传递系统都缺乏这些机制。
+
+
+
+- 1、多个 Broker 可以形成一个 Broker 分组。每个 Broker 分组存在一个 Master 和多个 Slave 节点。
+	-  Master 节点，可提供读和写功能；Slave 节点，可提供读功能。
+	-  Master 节点会不断发送新的 CommitLog 给 Slave节点；Slave 节点不断上报本地的 CommitLog 已经同步到的位置给 Master 节点。
+	-  Slave 节点会从 Master 节点拉取消费进度、Topic 配置等等。
+
+
+- 2、多个 Broker 分组，形成 Broker 集群。
+	- Broker 集群和集群之间，不存在通信与数据同步。
+
+
+- 3、Broker 可以配置同步刷盘或异步刷盘，根据消息的持久化的可靠性来配置。
+
+
+#### I、Broker组件组成部分 ####
+
+![](https://ws1.sinaimg.cn/large/006tKfTcgy1fo4vbpoxtej30r30dsdgs.jpg)
+
+
+- 远程处理模块是 broker 的入口，处理来自客户的请求。
+- Client manager，管理客户（生产者/消费者）并维护消费者的主题订阅。
+- Store Service，提供简单的 API 来存储或查询物理磁盘中的消息。
+- HA 服务，提供主代理和从代理之间的数据同步功能。
+- 索引服务，通过指定键为消息建立索引，并提供快速的消息查询。
+
+
+
+
+#### II、Broker 数据存储结构 ####
+
+![](http://img3.tbcdn.cn/5476e8b07b923/TB1Ali2PXXXXXXuXFXXXXXXXXXX)
+
+如上图所示，RocketMQ采取了一种数据与索引分离的存储方法。有效降低文件资源、IO资源，内存资源的损耗。即便是阿里这种海量数据，高并发场景也能够有效降低端到端延迟，并具备较强的横向扩展能力。
+
+
+这里
+
+- [RocketMQ高性能之底层存储设计](https://www.jianshu.com/p/d06e9bc6c463)
+
+
+
+#### 3.Producer ####
+
+Producer 与Name Server 集群中的其中一个节点（随机选择）建立长连接，定期从Name Server 取Topic 路由信息，并向提供Topic 服务的Master 建立长连接，且定时向Master 发送心跳。Producer 完全无状态，可集群部署。
+
+
+I、获得 Topic-Broker 的映射关系。
+
+
+
+- Producer 启动时，也需要指定 Namesrv 的地址，从 Namesrv 集群中选一台建立长连接。如果该 Namesrv 宕机，会自动连其他 Namesrv ，直到有可用的 Namesrv 为止。
+- 生产者每 30 秒从 Namesrv 获取 Topic 跟 Broker 的映射关系，更新到本地内存中。然后再跟 Topic 涉及的所有 Broker 建立长连接，每隔 30 秒发一次心跳。
+- 在 Broker 端也会每 10 秒扫描一次当前注册的 Producer ，如果发现某个 Producer 超过 2 分钟都没有发心跳，则断开连接。
+
+
+II、生产者端的负载均衡。
+
+生产者发送时，会自动轮询当前所有可发送的broker，一条消息发送成功，下次换另外一个broker发送，以达到消息平均落到所有的broker上。（假如某个 Broker 宕机，意味生产者最长需要 30 秒才能感知到。在这期间会向宕机的 Broker 发送消息。当一条消息发送到某个 Broker 失败后，会自动再重发 2 次，假如还是发送失败，则抛出发送失败异常。）
+
+
+III、Producer发送消息的几种方式：
+
+- 同步方式
+- 异步方式
+- Oneway 方式
+
+
+
+#### 4.Consumer ####
+
+ Consumer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master、Slave建立长连接，且定时向Master、Slave发送心跳。Consumer既可以从Master订阅消息，也可以从Slave订阅消息，订阅规则由Broker配置决定。（Consumer和Mbroker、Sbroker都建立连接。）
+
+
+I、获得 Topic-Broker 的映射关系。
+
+
+
+- Consumer 启动时需要指定 Namesrv 地址，与其中一个 Namesrv 建立长连接。消费者每隔 30 秒从 Namesrv 获取所有Topic 的最新队列情况，这意味着某个 Broker 如果宕机，客户端最多要 30 秒才能感知。连接建立后，从 Namesrv 中获取当前消费 Topic 所涉及的 Broker，直连 Broker 。
+- Consumer 跟 Broker 是长连接，会每隔 30 秒发心跳信息到Broker 。Broker 端每 10 秒检查一次当前存活的 Consumer ，若发现某个 Consumer 2 分钟内没有心跳，就断开与该 Consumer 的连接，并且向该消费组的其他实例发送通知，触发该消费者集群的负载均衡。
+
+II、消费者端的负载均衡
+
+根据消费者的消费模式不同，负载均衡方式也不同。消费者有两种消费模式：集群消费和广播消费。
+
+
+
+- 集群消费：一个 Topic 可以由同一个消费这分组( Consumer Group )下所有消费者分担消费。
+	- 实际上，每个 Consumer 是平均分摊 Message Queue 去做拉取消费。例如某个 Topic 有 3 个队列，其中一个 Consumer Group 有 3 个实例（可能是 3 个进程，或者 3 台机器），那么每个实例只消费其中的 1 个队列。
+	- 而由 Producer 发送消息的时候是轮询所有的队列，所以消息会平均散落在不同的队列上，可以认为队列上的消息是平均的。那么实例也就平均地消费消息了。
+	- 集群消费模式下，消费进度的存储会持久化到 Broker 。
+	- 当新建一个 Consumer Group 时，默认情况下，该分组的消费者会从 min offset 开始重新消费消息。
+- 广播消费：消息将对一 个Consumer Group 下的各个 Consumer 实例都投递一遍。即即使这些 Consumer 属于同一个Consumer Group ，消息也会被 Consumer Group 中的每个 Consumer 都消费一次。
+	- 实际上，是一个消费组下的每个消费者实例都获取到了 Topic 下面的每个 Message Queue 去拉取消费。所以消息会投递到每个消费者实例。
+	- 广播消费模式下，消费进度会存储持久化到实例本地。
+
+
+消费者获取消息有两种模式：推送模式和拉取模式。
+
+- PushConsumer：推送模式（虽然 RocketMQ 使用的是长轮询）的消费者。消息的能及时被消费。使用非常简单，内部已处理如线程池消费、流控、负载均衡、异常处理等等的各种场景。
+- 拉取模式的消费者。应用主动控制拉取的时机，怎么拉取，怎么消费等。主动权更高。但要自己处理各种场景。
+
+（决绝绝大多数场景下，我们只会使用 PushConsumer 推送模式。至少个人目前为止，暂时还没用过 PullConsumer ）
+
 ### 三、RocketMQ关键特性 ###
 
 #### 1.单机支持1 万以上持久化队列 ####
@@ -212,7 +332,7 @@ RocketMQ的所有消息都是持久化的，先写入系统PAGECACHE，然后刷
 
 在有RAID 卡，SAS 15000 转磁盘测试顺序写文件，速度可以达到300M 每秒左右，而线上的网卡一般都为千兆网卡，写磁盘速度明显快亍数据网络入口速度，那么是否可以做到写完内存就向用户返回，由后台线程刷盘呢？
 
-（1）由亍磁盘速度大亍网卡速度，那举刷盘的迕度肯定可以跟上消息的写入速度。
+（1）由亍磁盘速度大于网卡速度，那么刷盘的速度肯定可以跟上消息的写入速度。
 
 （2）万一由于此时系统压力过大，可能堆积消息，除了写入IO，还有读取IO，万一出现磁盘读取落后情况，会不会导致内存溢出，答案是否定的，原因如下：
 

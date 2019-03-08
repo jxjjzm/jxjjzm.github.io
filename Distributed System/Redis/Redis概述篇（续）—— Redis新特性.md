@@ -26,16 +26,56 @@
 
 ### 二、耳听八方 —— Stream ###
 
+Redis5.0 被作者 Antirez 突然放了出来，增加了很多新的特色功能。而 Redis5.0 最大的新特性就是多出了一个数据结构 Stream，它是一个新的强大的支持多播的可持久化的消息队列，作者坦言 Redis Stream 狠狠地借鉴了 Kafka 的设计。
+
+![](https://i.imgur.com/OLg9UTA.png)
+
+Redis Stream 的结构如上图所示，它有一个消息链表，将所有加入的消息都串起来，每个消息都有一个唯一的 ID 和对应的内容。消息是持久化的，Redis 重启后，内容还在。
+
+每个 Stream 都有唯一的名称，它就是 Redis 的 key，在我们首次使用xadd指令追加消息时自动创建。每个 Stream 都可以挂多个消费组，每个消费组会有个游标last_delivered_id在 Stream 数组之上往前移动，表示当前消费组已经消费到哪条消息了。每个消费组都有一个 Stream 内唯一的名称，消费组不会自动创建，它需要单独的指令xgroup create进行创建，需要指定从 Stream 的某个消息 ID 开始消费，这个 ID 用来初始化last_delivered_id变量。
+
+
+每个消费组 (Consumer Group) 的状态都是独立的，相互不受影响。也就是说同一份 Stream 内部的消息会被每个消费组都消费到。同一个消费组 (Consumer Group) 可以挂接多个消费者 (Consumer)，这些消费者之间是竞争关系，任意一个消费者读取了消息都会使游标last_delivered_id往前移动。每个消费者有一个组内唯一名称。
+
+消费者 (Consumer) 内部会有个状态变量pending_ids，它记录了当前已经被客户端读取的消息，但是还没有 ack。如果客户端没有 ack，这个变量里面的消息 ID 会越来越多，一旦某个消息被 ack，它就开始减少。这个 pending_ids 变量在 Redis 官方被称之为PEL，也就是Pending Entries List，这是一个很核心的数据结构，它用来确保客户端至少消费了消息一次，而不会在网络传输的中途丢失了没处理。
+
+
+- xadd 追加消息
+- xdel 删除消息，这里的删除仅仅是设置了标志位，不影响消息总长度
+- xrange 获取消息列表，会自动过滤已经删除的消息
+- xlen 消息长度
+- del 删除 Stream
+
+
+I、独立消费
+
+我们可以在不定义消费组的情况下进行 Stream 消息的独立消费，当 Stream 没有新消息时，甚至可以阻塞等待。Redis 设计了一个单独的消费指令xread，可以将 Stream 当成普通的消息队列 (list) 来使用。使用 xread 时，我们可以完全忽略消费组 (Consumer Group) 的存在，就好比 Stream 就是一个普通的列表 (list)。
+
+客户端如果想要使用 xread 进行顺序消费，一定要记住当前消费到哪里了，也就是返回的消息 ID。下次继续调用 xread 时，将上次返回的最后一个消息 ID 作为参数传递进去，就可以继续消费后续的消息。
+
+II、
+
 
 
 ### 三、无所不知 —— Info 指令 ###
 
+在使用 Redis 时，时常会遇到很多问题需要诊断，在诊断之前需要了解 Redis 的运行状态，通过强大的 Info 指令，你可以清晰地知道 Redis 内部一系列运行参数。
+
+nfo 指令显示的信息非常繁多，分为 9 大块，每个块都有非常多的参数，这 9 个块分别是:
 
 
 
+- Server 服务器运行的环境参数
+- Clients 客户端相关信息
+- Memory 服务器运行内存统计数据
+- Persistence 持久化信息
+- Stats 通用统计数据
+- Replication 主从复制相关信息
+- CPU CPU 使用情况
+- Cluster 集群信息
+- KeySpace 键值对统计数量信息
 
-
-
+Info 可以一次性获取所有的信息，也可以按块取信息。
 
 
 附：
