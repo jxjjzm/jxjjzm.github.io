@@ -54,11 +54,14 @@ Apache下开源的另外一款MQ—ActiveMQ（默认采用的KahaDB做消息存�
 - （3）RocketMQ每次读写文件的时候真的是完全顺序读写么？这里，发送消息时，生产者端的消息确实是顺序写入CommitLog；订阅消息时，消费者端也是顺序读取ConsumeQueue，然而根据其中的起始物理位置偏移量offset读取消息真实内容却是随机读取CommitLog。 在RocketMQ集群整体的吞吐量、并发量非常高的情况下，随机读取文件带来的性能开销影响还是比较大的，那么这里如何去优化和避免这个问题呢？
 
 
+
 **I、Mmap内存映射技术—MappedByteBuffer**
+
+![](https://i.imgur.com/8gSBzlR.png)
 
 Mmap内存映射和普通标准IO操作的本质区别在于它并不需要将文件中的数据先拷贝至OS的内核IO缓冲区，而是可以直接将用户进程私有地址空间中的一块区域与文件对象建立映射关系，这样程序就好像可以直接从内存中完成对文件读/写操作一样。只有当缺页中断发生时，直接将文件从磁盘拷贝至用户态的进程空间内，只进行了一次数据拷贝。对于容量较大的文件来说（文件大小一般需要限制在1.5~2G以下），采用Mmap的方式其读/写的效率和性能都非常高。
 
-![](https://mmbiz.qpic.cn/mmbiz_png/AtZHGo2bvzKJ66ic95yndHEyPjrntbUKDcScf3IGG13djUPVCMoALuKYIlo4eXpbX4uc9eibwQWjPvtZY0DUYmcQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+![](https://i.imgur.com/ezsRkaW.png)
 
 
 
@@ -77,12 +80,44 @@ PageCache是OS对文件的缓存，用于加速对文件的读写。一般来说
 
 对于文件的顺序读写操作来说，读和写的区域都在OS的PageCache内，此时读写性能接近于内存。RocketMQ的大致做法是，将数据文件映射到OS的虚拟内存中（通过JDK NIO的MappedByteBuffer），写消息的时候首先写入PageCache，并通过异步刷盘的方式将消息批量的做持久化（同时也支持同步刷盘）；订阅消费消息时（对CommitLog操作是随机读取），由于PageCache的局部性热点原理且整体情况下还是从旧到新的有序读，因此大部分情况下消息还是可以直接从Page Cache中读取，不会产生太多的缺页（Page Fault）中断而从磁盘读取
 
-![](https://mmbiz.qpic.cn/mmbiz_png/AtZHGo2bvzKJ66ic95yndHEyPjrntbUKDHdibbqyQRAFS4tHxSn68AaRNKtxHb2MHTI0olELD7iaCVpBVFMGFms6w/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+![](https://i.imgur.com/fXaoTW7.png)
 
 PageCache机制也不是完全无缺点的，当遇到OS进行脏页回写，内存回收，内存swap等情况时，就会引起较大的消息读写延迟。
 
 
+
+这里，我们可以总结下RocketMQ存储架构的优缺点：
+
+优点：
+
+
+- a、ConsumeQueue消息逻辑队列较为轻量级；
+- b、对磁盘的访问串行化，避免磁盘竟争，不会因为队列增加导致IOWAIT增高；
+
+缺点：
+
+
+
+- a、对于CommitLog来说写入消息虽然是顺序写，但是读却变成了完全的随机读；
+- b、Consumer端订阅消费一条消息，需要先读ConsumeQueue，再读Commit Log，一定程度上增加了开销；
+
+
+#### 3.刷盘 ####
+
+在RocketMQ中消息刷盘主要可以分为同步刷盘和异步刷盘两种。
+
+![](https://i.imgur.com/aYU4VuH.png)
+
+（1）同步刷盘：如上图所示，只有在消息真正持久化至磁盘后，RocketMQ的Broker端才会真正地返回给Producer端一个成功的ACK响应。同步刷盘对MQ消息可靠性来说是一种不错的保障，但是性能上会有较大影响，一般适用于金融业务应用领域。
+
+（2）异步刷盘：能够充分利用OS的PageCache的优势，只要消息写入PageCache即可将成功的ACK返回给Producer端。消息刷盘采用后台异步线程提交的方式进行，降低了读写延迟，提高了MQ的性能和吞吐量。异步和同步刷盘的区别在于，异步刷盘时，主线程并不会阻塞，在将刷盘线程wakeup后，就会继续执行。
+
+
+
+
+
 ### 附：推荐文献 ###
+
 
 - [RocketMQ高性能之底层存储设计](https://www.jianshu.com/p/d06e9bc6c463)
 - [消息中间件—RocketMQ消息存储（一）](https://mp.weixin.qq.com/s/mPxsA4_ZVI3PUDU3_3o41g)
