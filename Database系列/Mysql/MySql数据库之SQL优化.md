@@ -7,9 +7,9 @@
 
 
 
+http://www.jfox.info/2017/mysql-explain%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A.html
 
-
-
+https://github.com/jxjjzm/woker/blob/master/mysql/MySQL%20explain%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E8%A7%A3%E8%AF%BB.md
 
 
 
