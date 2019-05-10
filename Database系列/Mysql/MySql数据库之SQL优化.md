@@ -17,10 +17,10 @@
 
 Explain使用方式： EXPLAIN +SQL语句
 
-#### 一、explain 输出解释 ####
+#### explain 输出解释： ####
 
-![](https://i.imgur.com/eXjRDek.png)
 
+![](https://pic3.zhimg.com/80/v2-d61a9dd58e8f2760dbc94e4e5208987a_hd.jpg)
 
 
 - id : select查询的序列号，包含一组数字，表示查询中执行select子句或操作表的顺序
@@ -88,19 +88,19 @@ Explain使用方式： EXPLAIN +SQL语句
 
 
 
-
-
-
-
-
-
-
-
-
 #### 附：参考文献 ####
 
-- [MySQL explain执行计划详细解释](http://www.jfox.info/2017/mysql-explain%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A.html)
 - [MySQL 性能优化神器 Explain 使用分析](https://segmentfault.com/a/1190000008131735)
+- [MySQL explain详解](https://www.cnblogs.com/butterfly100/archive/2018/01/15/8287569.html)
+- [MySQL explain命令详解](https://www.cnblogs.com/gomysql/p/3720123.html)
+
+
+
+
+
+### 二、Mysql使用慢查询分析 ###
+
+在my.ini中： long_query_time=1 log-slow-queries=d:\mysql5\logs\mysqlslow.log 把超过1秒的记录在慢查询日志中 可以用mysqlsla来分析之。也可以在mysqlreport中，有如 DMS分别分析了select ,update,insert,delete,replace等所占的百分比
 
 
 
@@ -143,13 +143,38 @@ Explain使用方式： EXPLAIN +SQL语句
 - 不要过多创建索引, 权衡索引个数与DML之间关系，DML也就是插入、删除数据操作。这里需要权衡一个问题，建立索引的目的是为了提高查询效率的，但建立的索引过多，会影响插入、删除数据的速度，因为我们修改的表数据，索引也需要进行调整重建
 - 对于like查询，”%”不要放在前面。
 - 查询where条件数据类型不匹配也无法使用索引
+- 当只要一行数据时使用 LIMIT 1
 
 
 
 
+**Mysql 索引失效的可能情况**
+
+- Null值
+	- 单列索引无法存储null值，复合索引无法存储全为null的值。
+	- 查询时，采用is null（is not null）条件时，不能利用到索引，只能全表扫描。
+
+（
+
+- 索引是有序的。NULL值进入索引时，无法确定其应该放在哪里。
+- 如果需要把空值存入索引，方法有二：其一，把NULL值转为一个特定的值，在WHERE中检索时，用该特定值查找。其二，建立一个复合索引。例如　create index ind_a on table(col1,1);  通过在复合索引中指定一个非空常量值，而使构成索引的列的组合中，不可能出现全空值。　
+
+）
 
 
+- 前导模糊查询不能利用索引(like '%XX'或者like '%XX%')
+- 不在索引列上做任何操作（计算，函数，（自动或者手动）类型装换），会导致索引失效而导致全表扫描
+- 存储引擎不能使用索引中范围条件右边的列，范围之后索引失效。（< ,> between and）
+- mysql使用不等于(!= 或者<>)的时候，无法使用索引，会导致索引失效
+- mysql中，如果条件中有or，即使其中有条件带索引也不会使用(这也是为什么尽量少用or的原因)。要想使用or，又想让索引生效，只能将or条件中的每个列都加上索引
+- mysql中，字符串不加单引号索引会失效。
+- 违反最左前缀匹配原则
+- 查询where条件数据类型不匹配也无法使用索引
 
+
+附：
+
+- [MySQL 大表优化方案（长文）](https://mp.weixin.qq.com/s/Z5jqnl_VnCDvbnYdboLw2A)
 
 
 
