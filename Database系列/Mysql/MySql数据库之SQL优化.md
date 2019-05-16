@@ -32,13 +32,13 @@ Explain使用方式： EXPLAIN +SQL语句
 
 
 - select_type: SELECT 查询的类型.
-	-  SIMPLE : 简单SELECT(不使用UNION或子查询等)
-	-  PRIMARY : 查询中若包含任何复杂的子部分,最外层的select被标记为PRIMARY
-	-  UNION : UNION中的第二个或后面的SELECT语句.
-	-  DEPENDENT UNION : UNION中的第二个或后面的SELECT语句，取决于外面的查询
-	-  UNION RESULT : UNION的结果。
-	-  SUBQUERY : 在SELECT或WHERE列表中包含了子查询，该子查询被标记为SUBQUERY (子查询中的第一个SELECT.)
-	-  DEPENDENT SUBQUERY : 子查询中的第一个SELECT，取决于外面的查询
+	-  SIMPLE : 简单SELECT(除子查询或者UNION 之外的其他查询)；
+	-  PRIMARY : 查询中若包含任何复杂的子部分,最外层的select被标记为PRIMARY。（子查询中的最外层查询，注意并不是主键查询；）；
+	-  UNION : UNION 语句中第二个SELECT 开始的后面所有SELECT，第一个SELECT 为PRIMARY；
+	-  DEPENDENT UNION : 子查询中的UNION，且为UNION中从第二个SELECT开始的后面所有SELECT，依赖于外部查询的结果集；
+	-  UNION RESULT : UNION 中的合并结果；
+	-  SUBQUERY : 子查询内层查询的第一个SELECT，结果不依赖于外部查询结果集；
+	-  DEPENDENT SUBQUERY : 子查询中内层的第一个SELECT，依赖于外部查询的结果集；
 	-  DERIVED : 在FROM列表中包含的子查询被标记为DERIVED（衍生），MySQL会递归执行这些子查询，把结果放在临时表中
 
 
@@ -46,12 +46,12 @@ Explain使用方式： EXPLAIN +SQL语句
 - table : 显示这一行的数据是关于哪张表的. 有时不是真实的表名字,看到的是derivedx(x是个数字,我的理解是第几步执行的结果)
 
 
-- type : 这列很重要,显示了连接使用了哪种类别,有无使用索引. 从最好到最差的连接类型为(列举出主要的，并非全部): ALL < index < range ~ index_merge < ref < eq_ref < const < system .(MySQL 性能优化神器 Explain 使用分析)
+- type : 这列很重要,显示了连接使用了哪种类别,有无使用索引. 从最好到最差的连接类型为(列举出主要的，并非全部): ALL < index < range ~ index_merge < ref < eq_ref < const < system .(一般来说，得保证查询至少达到range级别，最好能达到ref。)
 	- system : 表只有一行记录（等于系统表），这是const联接类型的一个特例，平时不会出现，这个也可以忽略不计.(表仅有一行满足条件.)
 	- const : 针对主键或唯一索引的等值查询扫描, 最多只返回一行数据. const 查询速度非常快, 因为它仅仅读取一次即可.
-	- eq_ref : 此类型通常出现在多表的 join 查询, 表示对于前表的每一个结果, 都只能匹配到后表的一行结果. 并且查询的比较操作通常是 =, 查询效率较高. 
-	- ref : 此类型通常出现在多表的 join 查询, 针对于非唯一或非主键索引, 或者是使用了 最左前缀 规则索引的查询. 
-	- range : 表示使用索引范围查询, 通过索引字段范围获取表中部分数据记录. 这个类型通常出现在 =, <>, >, >=, <, <=, IS NULL, <=>, BETWEEN, IN() 操作中.当 type 是 range 时, 那么 EXPLAIN 输出的 ref 字段为 NULL, 并且 key_len 字段是此次查询中使用到的索引的最长的那个.
+	- eq_ref : 主键或唯一性索引扫描，对于每个索引键，表中只有一条记录与之匹配。此类型通常出现在多表的 join 查询, 表示对于前表的每一个结果, 都只能匹配到后表的一行结果. 并且查询的比较操作通常是 =, 查询效率较高. 
+	- ref : 此类型通常出现在多表的 join 查询, 针对于非唯一或非主键索引扫描, 或者是使用了最左前缀 规则索引的查询. 
+	- range : 扫描部分索引，表示使用索引范围查询, 通过索引字段范围获取表中部分数据记录. 这个类型通常出现在 =, <>, >, >=, <, <=, IS NULL, <=>, BETWEEN, IN() 操作中.当 type 是 range 时, 那么 EXPLAIN 输出的 ref 字段为 NULL, 并且 key_len 字段是此次查询中使用到的索引的最长的那个.
 	- index : 表示全索引扫描(full index scan), 和 ALL 类型类似, 只不过 ALL 类型是全表扫描, 而 index 类型则仅仅扫描所有的索引, 而不扫描数据.index 类型通常出现在: 所要查询的数据直接在索引树中就可以获取到, 而不需要扫描数据. 当是这种情况时, Extra 字段 会显示 Using index.
 	- all : 表示全表扫描, 这个类型的查询是性能最差的查询之一. 通常来说, 我们的查询不应该出现 ALL 类型的查询, 因为这样的查询在数据量大的情况下, 对数据库的性能是巨大的灾难. 如一个查询是 ALL 类型查询, 那么一般来说可以对相应的字段添加索引来避免.
 
@@ -102,7 +102,14 @@ Explain使用方式： EXPLAIN +SQL语句
 
 在my.ini中： long_query_time=1 log-slow-queries=d:\mysql5\logs\mysqlslow.log 把超过1秒的记录在慢查询日志中 可以用mysqlsla来分析之。也可以在mysqlreport中，有如 DMS分别分析了select ,update,insert,delete,replace等所占的百分比
 
+不要直接打开整个慢查询日志进行分析，这样比较浪费时间和精力，可以使用pt-query-digest工具进行分析.
 
+
+
+- 使用show profile ： set profiling=1;开启，服务器上所有执行语句会记录执行时间，存到临时表中show profiles、show profile for query 临时表ID
+- 使用show status ： show status会返回一些计数器，show global status会查看所有服务器级别的所有计数有时根据这些计数，可以推测出哪些操作代价较高或者消耗时间多
+- show processlist : 观察是否有大量线程处于不正常的状态或特征(比如：锁等待)
+- 使用explain
 
 
 

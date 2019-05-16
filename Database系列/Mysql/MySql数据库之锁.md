@@ -29,7 +29,7 @@
 	- 特点：
 		- 偏向MyISAM存储引擎，开销小，加锁快；无死锁；锁定粒度大，发生锁冲突的概率最高，并发度最低。
 		- MyISAM在执行查询语句前，会自动给涉及的所有表加读锁，在执行增删改操作前，会自动给涉及的表加写锁
-		- 读锁会被阻塞写，但不会阻塞写。而写锁则会把读和写都阻塞。
+		- 读锁会被阻塞写，但不会阻塞读。而写锁则会把读和写都阻塞。
 
 
 
@@ -91,7 +91,6 @@ InnoDB行锁是通过给索引上的索引项加锁来实现的，这一点MySQL
 
 
 
-https://github.com/muyinchen/woker/tree/master/mysql
 
 
 ### 附录 ###
@@ -100,3 +99,4 @@ https://github.com/muyinchen/woker/tree/master/mysql
 
 - [MySQL在并发场景下的优化手段](https://mp.weixin.qq.com/s/BNiNXylqPwKXMW8rkS6dbQ)
 - [mysql数据库死锁的产生原因及解决办法](https://www.cnblogs.com/sivkun/p/7518540.html)
+- [MySQL详解－－锁](https://github.com/muyinchen/woker/blob/master/mysql/MySQL%E8%AF%A6%E8%A7%A3%EF%BC%8D%EF%BC%8D%E9%94%81.md)

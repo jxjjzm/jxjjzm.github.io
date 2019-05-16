@@ -149,8 +149,13 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 <h2 id="jxjjzm-database">Database系列</h2>
 <h3 id="jxjjzm-database-mysql">Mysql</h3>
-//TODO
 
+- [MySql数据库之索引](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8B%E7%B4%A2%E5%BC%95.md)
+- [MySql数据库之事务](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8B%E4%BA%8B%E5%8A%A1.md)
+- [MySql数据库之锁](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8B%E9%94%81.md)
+- [MySql数据库之SQL优化](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8BSQL%E4%BC%98%E5%8C%96.md)
+- [MySql数据库之分库分表](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8B%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8.md)
+- [MySql数据库之面试篇](https://github.com/jxjjzm/jxjjzm.github.io/blob/master/Database%E7%B3%BB%E5%88%97/Mysql/MySql%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B9%8B%E9%9D%A2%E8%AF%95%E7%AF%87.md)
 
 
 <h2 id="jxjjzm-spring">Spring系列</h2>
