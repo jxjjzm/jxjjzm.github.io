@@ -119,7 +119,7 @@ Spring MVC是一种基于Java的实现了MVC模式的请求驱动（请求驱动
 #### 3.Spring MVC 接收请求参数 ####
 
 - I.使用HttpServletRequest获取
-- II.使用 注解@RequestParam绑定请求参数
+- II.使用注解@RequestParam绑定请求参数
 - III.使用自动机制封装成Bean对象（前提：前台属性的名称和java bean的属性的名称保持一致）
 - IV. Spring会自动将表单参数注入到方法参数（前提：方法参数与表单的name属性保持一致）（说明：如果前台有相同name值的数据传递则要使用数组来接收，相同名称的可能是有这样的数值但更多的是多选框，所以我们要使用数组来接收这样的值）
 - V.  通过@PathVariabl注解获取路径中传递的参数值 
@@ -140,7 +140,7 @@ Spring MVC是一种基于Java的实现了MVC模式的请求驱动（请求驱动
 ### 三、REST 与 RESTful ###
 
 
-TODO：
+TODO：略
 
 
 

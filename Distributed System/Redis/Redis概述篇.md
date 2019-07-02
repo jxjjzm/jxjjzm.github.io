@@ -37,7 +37,7 @@ redis的出现，很大程度补偿了memcached这类key/value存储的不足，
 Redis的版本规则如下————次版本号（第一个小数点后的数字）为偶数的版本是稳定版本（2.4、2.6等），奇数为非稳定版本（2.5、2.7），一般推荐在生产环境使用稳定版本。（说明：Redis官方是不支持windows平台的，windows版本是由微软自己建立的分支，基于官方的Redis源码上进行编译、发布、维护的，所以windows平台的Redis版本要略低于官方版本。）
 
 
-#### 4.主流NSQL比较 ####
+#### 4.主流NOSQL比较 ####
 
 ![](https://i.imgur.com/IwcXHdQ.png)
 
@@ -123,7 +123,7 @@ Redis没有直接使用C语言传统的字符串表示（以空字符结尾的�
 
 #### 2.Hash （哈希表） ####
 
-Redis hash是一个String类型的field和value的映射表。Key-HashMap结构，相比String类型将这整个对象持久化成JSON格式，Hash将对象的各个属性存入Map里，可以只读取/更新对象的某些属性————当前HashMap的实现有两种方式：当HashMap的成员比较少时Redis为了节省内存会采用类似一维数组的方式来紧凑存储，而不会采用真正的HashMap结构，这时对应的value的redisObject的encoding为zipmap，当成员数量增大时会自动转成真正的HashMap,此时encoding为ht。
+Redis hash是一个String类型的field和value的映射表。Key-HashMap结构，相比String类型将这整个对象持久化成JSON格式，Hash将对象的各个属性存入Map里，可以只读取/更新对象的某些属性————当前HashMap的实现有两种方式：当HashMap的成员比较少时Redis为了节省内存会采用压缩列表（类似一维数组的方式）来紧凑存储，而不会采用真正的HashMap结构，这时对应的value的redisObject的encoding为zipmap，当成员数量增大时会自动转成真正的HashMap,此时encoding为ht。
 
 
 

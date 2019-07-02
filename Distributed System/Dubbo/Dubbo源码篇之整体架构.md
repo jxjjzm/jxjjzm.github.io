@@ -19,9 +19,8 @@ Dubbo是一个分布式服务框架，致力于提供高性能和透明化的**R
 
 （2）DUBBO的基本原理：
 
-![](https://i.imgur.com/N8Wcbg3.png)
+![](http://dubbo.apache.org/docs/zh-cn/user/sources/images/dubbo-architecture.jpg)
 
-![](https://i.imgur.com/9H6eyMZ.png)
 
 
 Dubbo源码系列博文重点针对的是对Dubbo比较熟悉的读者，如果你对Dubbo还处于不甚了解的状态建议先去熟悉下Dubbo，这里提供几个常见的链接地址仅供参考：
@@ -41,7 +40,7 @@ Dubbo源码系列博文重点针对的是对Dubbo比较熟悉的读者，如果�
 
 ### 二、Dubbo整体设计 ###
 
-![](http://dubbo.apache.org/books/dubbo-dev-book/sources/images/dubbo-framework.jpg)
+![](http://dubbo.apache.org/docs/zh-cn/dev/sources/images/dubbo-framework.jpg)
 
 
 图例说明：
@@ -86,7 +85,7 @@ ExchangeClient, ExchangeServe
 
 ![](https://i.imgur.com/TatpHFr.png)
 
-![](http://dubbo.apache.org/books/dubbo-dev-book/sources/images/dubbo-modules.jpg)
+![](http://dubbo.apache.org/docs/zh-cn/dev/sources/images/dubbo-modules.jpg)
 
 模块说明：
 

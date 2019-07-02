@@ -3,7 +3,7 @@
 
 - 你有没有遇到过OutOfMemory问题？你是怎么来处理这个问题的？处理过程中有哪些收获？
 
-### 一、JVM内存溢出 ###
+### 一、JVM内存溢出(OOM) ###
 
 #### 1、堆内存溢出 ####
 
@@ -143,22 +143,18 @@
 
 
 
+
+- [线上应用故障排查之二：高内存占用](http://www.blogjava.net/hankchen/archive/2012/05/09/377736.html)
+- [线上FullGC频繁的排查](https://blog.csdn.net/wilsonpeng3/article/details/70064336/)
+- [JVM理解GC日志](https://www.jianshu.com/p/fd1d4f21733a)
+
 ### 二、CPU ###
 
 
 
 - [线上应用故障排查之一：高CPU占用](http://www.blogjava.net/hankchen/archive/2012/05/09/377735.html)
--  [JVM内存溢出导致的CPU过高问题排查案例](https://blog.csdn.net/nielinqi520/article/details/78455614)
-
-
-
-### 三、内存 ###
-
-
-
-
-- [线上应用故障排查之二：高内存占用](http://www.blogjava.net/hankchen/archive/2012/05/09/377736.html)
-
+- [JVM内存溢出导致的CPU过高问题排查案例](https://blog.csdn.net/nielinqi520/article/details/78455614)
+- [系统运行缓慢，CPU 100%，以及Full GC次数过多问题的排查思路](https://mp.weixin.qq.com/s/rhXXaPiYoLpTQ2WX9-fYwQ)
 
 
 
@@ -176,3 +172,6 @@
 - [Java性能调优](https://juejin.im/post/5a0ab41251882578da0d631c)
 -  [你假笨](https://mp.weixin.qq.com/mp/homepage?__biz=MzIzNjI1ODc2OA==&hid=3&sn=bca0355516d60449a140b8ad12f3d89f#wechat_redirect)
 -  [匠心零度](http://mp.weixin.qq.com/mp/homepage?__biz=MzU2NjIzNDk5NQ==&hid=1&sn=41380a4a375614ac10eda44613795dd0&scene=1&devicetype=android-24&version=26060739&lang=zh_CN&nettype=WIFI&ascene=7&session_us=gh_934b01732546&wx_header=1)
+-  [Java内存溢出(OOM)异常完全指南](https://www.jianshu.com/p/2fdee831ed03)
+-  [GC 优化的一些总结](http://engineering.xueqiu.com/blog/2015/06/25/jvm-gc-tuning/)
+-  [GC日志查看分析](https://blog.csdn.net/TimHeath/article/details/53053106)
